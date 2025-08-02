@@ -87,32 +87,35 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden">
-        {/* Video Background */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        >
-          <source src="/bgvideorose.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Navbar */}
-        <div className="relative z-30">
-          <Navbar />
-        </div>
-        
-        <div className="max-w-7xl px-4 lg:px-8 relative z-20 flex items-center justify-center min-h-screen">
-          <div className="text-center text-white ml-8">
-            <h1 className={`${greatVibes.className} text-8xl lg:text-[12rem] mb-6`}>
-              Rose Jewels
-            </h1>
-            
-          </div>
-        </div>
-      </section>
+<section className="relative min-h-screen overflow-hidden">
+  {/* Video Background */}
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  >
+    <source
+      src="https://res.cloudinary.com/djjj41z17/video/upload/v1754131132/bgvideorose_1_jodi47.mp4"
+      type="video/mp4"
+    />
+  </video>
+
+  {/* Navbar */}
+  <div className="relative z-30">
+    <Navbar />
+  </div>
+
+  <div className="max-w-7xl px-4 lg:px-8 relative z-20 flex items-center justify-center min-h-screen">
+    <div className="text-center text-white ml-8">
+      <h1 className={`${greatVibes.className} text-8xl lg:text-[12rem] mb-6`}>
+        Rose Jewels
+      </h1>
+    </div>
+  </div>
+</section>
+
 
       {/* About Section */}
       <section className="py-20 bg-white">
