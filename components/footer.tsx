@@ -1,12 +1,14 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, Clock, Shield, Truck, CreditCard, Star, Heart, Gift, Crown } from "lucide-react"
 
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
+
+
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Company Info */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
@@ -104,14 +106,116 @@ export default function Footer() {
                 <Mail className="w-5 h-5 text-[#C4A484]" />
                 <span className="text-gray-400">info@rosejewels.com</span>
               </div>
+              <div className="flex items-center space-x-3">
+                <Clock className="w-5 h-5 text-[#C4A484]" />
+                <span className="text-gray-400">Mon-Sat: 9AM-8PM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Categories */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Categories</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/necklaces" className="text-gray-400 hover:text-white transition-colors">
+                  Necklaces
+                </Link>
+              </li>
+              <li>
+                <Link href="/pendants" className="text-gray-400 hover:text-white transition-colors">
+                  Pendants
+                </Link>
+              </li>
+              <li>
+                <Link href="/rings" className="text-gray-400 hover:text-white transition-colors">
+                  Rings
+                </Link>
+              </li>
+              <li>
+                <Link href="/earrings" className="text-gray-400 hover:text-white transition-colors">
+                  Earrings
+                </Link>
+              </li>
+              <li>
+                <Link href="/bracelets" className="text-gray-400 hover:text-white transition-colors">
+                  Bracelets
+                </Link>
+              </li>
+              <li>
+                <Link href="/wedding" className="text-gray-400 hover:text-white transition-colors">
+                  Wedding Collection
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Special Offers */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Special Offers</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/new-arrivals" className="text-gray-400 hover:text-white transition-colors">
+                  New Arrivals
+                </Link>
+              </li>
+              <li>
+                <Link href="/sale" className="text-gray-400 hover:text-white transition-colors">
+                  Sale Items
+                </Link>
+              </li>
+              <li>
+                <Link href="/limited-edition" className="text-gray-400 hover:text-white transition-colors">
+                  Limited Edition
+                </Link>
+              </li>
+              <li>
+                <Link href="/personalized" className="text-gray-400 hover:text-white transition-colors">
+                  Personalized Jewelry
+                </Link>
+              </li>
+              <li>
+                <Link href="/luxury-collection" className="text-gray-400 hover:text-white transition-colors">
+                  Luxury Collection
+                </Link>
+              </li>
+              <li>
+                <Link href="/bridal-sets" className="text-gray-400 hover:text-white transition-colors">
+                  Bridal Sets
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Newsletter Section */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-semibold mb-4">Stay Updated</h3>
+            <p className="text-gray-400 mb-6">Subscribe to our newsletter for exclusive offers and latest collections</p>
+            <div className="flex max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#C4A484]"
+              />
+              <button className="px-6 py-3 bg-[#C4A484] text-white rounded-r-lg hover:bg-[#B89474] transition-colors">
+                Subscribe
+              </button>
             </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© 2024 Rose Jewels. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
+        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-4 mb-4 md:mb-0">
+            <p className="text-gray-400 text-sm">© 2024 Rose Jewels. All rights reserved.</p>
+            <div className="flex items-center space-x-2">
+              <Star className="w-4 h-4 text-[#C4A484]" />
+              <span className="text-gray-400 text-sm">Premium Quality Since 1998</span>
+            </div>
+          </div>
+          <div className="flex space-x-6">
             <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
               Privacy Policy
             </Link>
@@ -120,6 +224,9 @@ export default function Footer() {
             </Link>
             <Link href="/cookies" className="text-gray-400 hover:text-white text-sm transition-colors">
               Cookie Policy
+            </Link>
+            <Link href="/sitemap" className="text-gray-400 hover:text-white text-sm transition-colors">
+              Sitemap
             </Link>
           </div>
         </div>
