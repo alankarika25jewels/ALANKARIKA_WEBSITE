@@ -108,8 +108,8 @@ export default function Home() {
   </div>
 
   <div className="max-w-7xl px-4 lg:px-8 relative z-20 flex items-center justify-center min-h-screen">
-    <div className="text-center text-white ml-8 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-      <h1 className={`${greatVibes.className} text-8xl lg:text-[12rem] mb-6 animate-fade-in-up`} style={{ animationDelay: '0.8s' }}>
+    <div className="text-center text-white animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+      <h1 className={`${greatVibes.className} text-8xl lg:text-[12rem] mb-6 animate-fade-in-up`} style={{ animationDelay: '0.8s', marginLeft: '15rem' }}>
         Rose Jewels
       </h1>
     </div>
