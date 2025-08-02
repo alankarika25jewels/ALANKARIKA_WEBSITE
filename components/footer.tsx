@@ -83,37 +83,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Customer Service */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Customer Service</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/shipping" className="text-gray-400 hover:text-white transition-colors">
-                  Shipping Info
-                </Link>
-              </li>
-              <li>
-                <Link href="/returns" className="text-gray-400 hover:text-white transition-colors">
-                  Returns & Exchanges
-                </Link>
-              </li>
-              <li>
-                <Link href="/size-guide" className="text-gray-400 hover:text-white transition-colors">
-                  Size Guide
-                </Link>
-              </li>
-              <li>
-                <Link href="/care-guide" className="text-gray-400 hover:text-white transition-colors">
-                  Jewelry Care
-                </Link>
-              </li>
-              <li>
-                <Link href="/warranty" className="text-gray-400 hover:text-white transition-colors">
-                  Warranty
-                </Link>
-              </li>
-            </ul>
-          </div>
+
 
           {/* Contact Info */}
           <div>
