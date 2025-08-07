@@ -287,6 +287,55 @@ export default function Home() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div>
+                <h2 className="font-allura text-5xl font-light text-gray-900 mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>About Alankarika</h2>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                  At Rose Jewels, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
+                  your precious moments, and your personal style. For over two decades, we've been dedicated to creating
+                  exquisite pieces that celebrate life's most beautiful moments.
+                </p>
+                <p className="text-gray-600 leading-relaxed mb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+                  Our master craftsmen combine traditional techniques with modern innovation to create jewelry that stands
+                  the test of time. Every piece is carefully designed and meticulously crafted using only the finest
+                  materials, ensuring that your jewelry remains as beautiful as the day you first wore it.
+                </p>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg animate-fade-in-up transition-all duration-300 hover:scale-105" style={{ animationDelay: '1s' }}>
+                  Learn More About Us
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <Image
+                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+                alt="Alankarika Logo"
+                width={800}
+                height={700}
+                className="rounded-2xl shadow-lg object-contain animate-fade-in-up transition-all duration-300 hover:scale-105"
+                style={{ animationDelay: '0.5s' }}
+                priority
+              />
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-lg animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Star className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Premium Quality</p>
+                    <p className="text-sm text-gray-600">Certified & Authentic</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* New Arrivals Section */}
       <section className="py-20" style={{ backgroundColor: '#F0E1B9FF' }}>
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -439,57 +488,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <div>
-                <h2 className="font-allura text-5xl font-light text-gray-900 mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>About Alankarika</h2>
-                <p className="text-gray-600 text-lg leading-relaxed mb-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                  At Rose Jewels, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
-                  your precious moments, and your personal style. For over two decades, we've been dedicated to creating
-                  exquisite pieces that celebrate life's most beautiful moments.
-                </p>
-                <p className="text-gray-600 leading-relaxed mb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-                  Our master craftsmen combine traditional techniques with modern innovation to create jewelry that stands
-                  the test of time. Every piece is carefully designed and meticulously crafted using only the finest
-                  materials, ensuring that your jewelry remains as beautiful as the day you first wore it.
-                </p>
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg animate-fade-in-up transition-all duration-300 hover:scale-105" style={{ animationDelay: '1s' }}>
-                  Learn More About Us
-                </Button>
-              </div>
-            </div>
-
-            <div className="relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              <Image
-                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
-                alt="Alankarika Logo"
-                width={800}
-                height={700}
-                className="rounded-2xl shadow-lg object-contain animate-fade-in-up transition-all duration-300 hover:scale-105"
-                style={{ animationDelay: '0.5s' }}
-                priority
-              />
-              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-lg animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                    <Star className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Premium Quality</p>
-                    <p className="text-sm text-gray-600">Certified & Authentic</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Categories Section */}
-      <section className="py-32 bg-white mt-32">
+      <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <h2 className="font-allura text-5xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>Shop by Category</h2>
