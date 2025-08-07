@@ -1,10 +1,39 @@
+"use client"
+
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import Navbar from "@/components/navbar"
+import NecklaceSection from "@/components/necklace-section"
+import PendantSection from "@/components/pendant-section"
+import InstagramCarousel from "@/components/instagram-carousel"
+import JewelryLayout from "@/components/jewelry-layout"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react"
+import { ArrowRight, Star, Heart, Eye, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react"
+import { useState } from "react"
+
 
 export default function Home() {
-  // Static data arrays
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [currentGemsSlide, setCurrentGemsSlide] = useState(0)
+  
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev: number) => prev === 0 ? newArrivals.length - 1 : prev - 1)
+  }
+  
+  const handleNextSlide = () => {
+    setCurrentSlide((prev: number) => prev === newArrivals.length - 1 ? 0 : prev + 1)
+  }
+  
+  const handlePrevGemsSlide = () => {
+    setCurrentGemsSlide((prev: number) => prev === 0 ? latestGems.length - 1 : prev - 1)
+  }
+  
+  const handleNextGemsSlide = () => {
+    setCurrentGemsSlide((prev: number) => prev === latestGems.length - 1 ? 0 : prev + 1)
+  }
+  
   const featuredProducts = [
     {
       id: 1,
@@ -59,428 +88,461 @@ export default function Home() {
       id: 3,
       name: "Pendants",
       count: 28,
-      image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754041775/RNK-387_mhmryo.jpg",
-      href: "/categories/pendants",
+      image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754042374/RP_2237_thzcn1.jpg",
+      href: "/categories/earrings",
     },
     {
       id: 4,
-      name: "Earrings",
-      count: 38,
-      image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754041278/7K0A0299_jboywk.jpg",
-      href: "/categories/earrings",
+      name: "Mangalsutra",
+      count: 19,
+      image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754040744/1J8A0224_kecmbm.jpg",
+      href: "/categories/bracelets",
     },
   ]
 
   const newArrivals = [
     {
       id: 1,
-      name: "Royal Diamond Tiara",
-      price: "$2,499",
-      originalPrice: "$3,200",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 156,
-      isNew: true,
+      name: "Aaradhya Minimal Necklace Set",
+      brand: "JEWELS BY LAHARI",
+      price: "1,099.00",
+      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop",
     },
     {
       id: 2,
-      name: "Pearl Princess Set",
-      price: "$1,899",
-      originalPrice: "$2,400",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 89,
-      isNew: true,
+      name: "Deviya Lakshmi Necklace Set",
+      brand: "JEWELS BY LAHARI",
+      price: "1,219.00",
+      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
     },
     {
       id: 3,
-      name: "Emerald Elegance Ring",
-      price: "$3,299",
-      originalPrice: "$4,100",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 203,
-      isNew: true,
+      name: "Flower Coin Choker Set",
+      brand: "JEWELS BY LAHARI",
+      price: "699.00",
+      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
     },
     {
       id: 4,
-      name: "Sapphire Serenity Necklace",
-      price: "$1,599",
-      originalPrice: "$2,000",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.7,
-      reviews: 134,
-      isNew: true,
+      name: "Rudrani R",
+      brand: "JEWELS BY LAHARI",
+      price: "1,299.00",
+      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
     },
     {
       id: 5,
-      name: "Golden Harmony Bracelet",
-      price: "$899",
-      originalPrice: "$1,200",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.6,
-      reviews: 78,
-      isNew: true,
+      name: "Krishna Pearl Necklace Set",
+      brand: "JEWELS BY LAHARI",
+      price: "899.00",
+      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
     },
     {
       id: 6,
-      name: "Ruby Radiance Earrings",
-      price: "$1,299",
-      originalPrice: "$1,600",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 95,
-      isNew: true,
+      name: "Radha Gold Pendant Set",
+      brand: "JEWELS BY LAHARI",
+      price: "1,499.00",
+      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
     },
     {
       id: 7,
-      name: "Platinum Purity Ring",
-      price: "$4,199",
-      originalPrice: "$5,200",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 167,
-      isNew: true,
+      name: "Ganesh Silver Bracelet",
+      brand: "JEWELS BY LAHARI",
+      price: "799.00",
+      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
     },
     {
       id: 8,
-      name: "Silver Symphony Set",
-      price: "$1,799",
-      originalPrice: "$2,300",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.7,
-      reviews: 112,
-      isNew: true,
+      name: "Lakshmi Diamond Ring",
+      brand: "JEWELS BY LAHARI",
+      price: "2,199.00",
+      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
     },
     {
       id: 9,
-      name: "Diamond Destiny Pendant",
-      price: "$2,899",
-      originalPrice: "$3,600",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 189,
-      isNew: true,
+      name: "Saraswati Pearl Earrings",
+      brand: "JEWELS BY LAHARI",
+      price: "1,099.00",
+      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
     },
     {
       id: 10,
-      name: "Crystal Cascade Necklace",
-      price: "$1,399",
-      originalPrice: "$1,800",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.6,
-      reviews: 67,
-      isNew: true,
+      name: "Durga Gold Chain",
+      brand: "JEWELS BY LAHARI",
+      price: "1,899.00",
+      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
     },
     {
       id: 11,
-      name: "Rose Gold Romance Ring",
-      price: "$2,199",
-      originalPrice: "$2,800",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 143,
-      isNew: true,
+      name: "Kali Silver Necklace",
+      brand: "JEWELS BY LAHARI",
+      price: "1,599.00",
+      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
     },
     {
       id: 12,
-      name: "Aquamarine Aura Set",
-      price: "$1,999",
-      originalPrice: "$2,500",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.7,
-      reviews: 98,
-      isNew: true,
-    },
-    {
-      id: 13,
-      name: "Royal Diamond Tiara",
-      price: "$5,499",
-      originalPrice: "$6,800",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 5.0,
-      reviews: 234,
-      isNew: true,
-    },
-    {
-      id: 14,
-      name: "Pearl Princess Set",
-      price: "$3,899",
-      originalPrice: "$4,800",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 167,
-      isNew: true,
+      name: "Hanuman Gold Pendant",
+      brand: "JEWELS BY LAHARI",
+      price: "1,299.00",
+      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
     },
   ]
 
   const latestGems = [
     {
       id: 1,
-      name: "Sapphire Serenity Ring",
-      price: "$1,899",
-      originalPrice: "$2,400",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 134,
-      isNew: false,
+      name: "Ruby Diamond Necklace",
+      brand: "JEWELS BY LAHARI",
+      price: "3,299.00",
+      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
     },
     {
       id: 2,
-      name: "Emerald Elegance Necklace",
-      price: "$2,299",
-      originalPrice: "$2,900",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 189,
-      isNew: false,
+      name: "Emerald Gold Ring",
+      brand: "JEWELS BY LAHARI",
+      price: "2,899.00",
+      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
     },
     {
       id: 3,
-      name: "Ruby Radiance Bracelet",
-      price: "$1,599",
-      originalPrice: "$2,000",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.7,
-      reviews: 98,
-      isNew: false,
+      name: "Sapphire Pearl Earrings",
+      brand: "JEWELS BY LAHARI",
+      price: "1,999.00",
+      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
     },
     {
       id: 4,
-      name: "Diamond Destiny Earrings",
-      price: "$2,799",
-      originalPrice: "$3,500",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 156,
-      isNew: false,
+      name: "Diamond Platinum Bracelet",
+      brand: "JEWELS BY LAHARI",
+      price: "4,599.00",
+      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
     },
     {
       id: 5,
-      name: "Pearl Purity Pendant",
-      price: "$1,299",
-      originalPrice: "$1,600",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.6,
-      reviews: 87,
-      isNew: false,
+      name: "Opal Silver Pendant",
+      brand: "JEWELS BY LAHARI",
+      price: "1,799.00",
+      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
     },
     {
       id: 6,
-      name: "Golden Harmony Ring",
-      price: "$1,899",
-      originalPrice: "$2,400",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 112,
-      isNew: false,
+      name: "Amethyst Gold Chain",
+      brand: "JEWELS BY LAHARI",
+      price: "2,399.00",
+      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
     },
     {
       id: 7,
-      name: "Silver Symphony Necklace",
-      price: "$1,199",
-      originalPrice: "$1,500",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.7,
-      reviews: 76,
-      isNew: false,
+      name: "Topaz Crystal Ring",
+      brand: "JEWELS BY LAHARI",
+      price: "1,899.00",
+      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop",
     },
     {
       id: 8,
-      name: "Crystal Cascade Bracelet",
-      price: "$899",
-      originalPrice: "$1,200",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.5,
-      reviews: 65,
-      isNew: false,
+      name: "Garnet Diamond Set",
+      brand: "JEWELS BY LAHARI",
+      price: "3,899.00",
+      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
     },
     {
       id: 9,
-      name: "Rose Gold Romance Pendant",
-      price: "$1,699",
-      originalPrice: "$2,100",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.8,
-      reviews: 94,
-      isNew: false,
+      name: "Aquamarine Pearl Necklace",
+      brand: "JEWELS BY LAHARI",
+      price: "2,699.00",
+      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
     },
     {
       id: 10,
-      name: "Aquamarine Aura Ring",
-      price: "$2,399",
-      originalPrice: "$3,000",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 178,
-      isNew: false,
+      name: "Citrine Gold Earrings",
+      brand: "JEWELS BY LAHARI",
+      price: "1,599.00",
+      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
     },
     {
       id: 11,
-      name: "Platinum Purity Necklace",
-      price: "$3,199",
-      originalPrice: "$4,000",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 203,
-      isNew: false,
+      name: "Peridot Silver Bracelet",
+      brand: "JEWELS BY LAHARI",
+      price: "1,299.00",
+      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
     },
     {
       id: 12,
-      name: "Diamond Delight Set",
-      price: "$4,599",
-      originalPrice: "$5,800",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 5.0,
-      reviews: 267,
-      isNew: false,
-    },
-    {
-      id: 13,
-      name: "Royal Sapphire Crown",
-      price: "$6,999",
-      originalPrice: "$8,500",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop&auto=format",
-      rating: 5.0,
-      reviews: 345,
-      isNew: false,
-    },
-    {
-      id: 14,
-      name: "Imperial Emerald Set",
-      price: "$4,899",
-      originalPrice: "$6,200",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
-      rating: 4.9,
-      reviews: 289,
-      isNew: false,
+      name: "Tanzanite Platinum Ring",
+      brand: "JEWELS BY LAHARI",
+      price: "5,299.00",
+      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          className="absolute inset-0 w-full h-full object-cover"
-          poster="/model-jewelry.jpg"
-          preload="metadata"
-        >
-          <source src="/hero-video.mp4" type="video/mp4" />
-        </video>
-        
-        <div className="relative z-10 text-center text-white">
-          <Image
-            src="/logo-rose.png"
-            alt="Alankarika Logo"
-            width={200}
-            height={80}
-            className="mx-auto mb-8"
-            priority
-          />
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 font-allura">
-            Timeless Elegance
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-            Discover our exquisite collection of handcrafted jewelry
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/shop">
-              <Button size="lg" className="bg-white text-black hover:bg-gray-100">
-                Shop Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                Learn More
-              </Button>
-            </Link>
+<section className="relative min-h-screen overflow-hidden">
+  {/* Video Background */}
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  >
+    <source
+      src="https://res.cloudinary.com/djjj41z17/video/upload/v1754131132/bgvideorose_1_jodi47.mp4"
+      type="video/mp4"
+    />
+  </video>
+
+  {/* Navbar */}
+  <div className="relative z-30 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+    <Navbar />
+  </div>
+
+  <div className="max-w-7xl px-4 lg:px-8 relative z-20 flex items-center justify-center min-h-screen">
+    <div className="text-center text-white animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+      <h1 className="font-allura text-8xl lg:text-[12rem] mb-6 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+        Alankarika
+      </h1>
+    </div>
+  </div>
+</section>
+
+      {/* New Arrivals Section */}
+      <section className="py-20" style={{ backgroundColor: '#F0E1B9FF' }}>
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="text-center flex-1">
+              <h2 className="font-allura text-5xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>New Arrivals</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                Discover our latest collection of exquisite jewelry pieces, crafted with precision and designed to make you shine.
+              </p>
+            </div>
+           
+          </div>
+
+                    <div className="relative overflow-hidden">
+            <div className="flex gap-8 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentSlide * 320}px)` }}>
+              {/* Debug: {newArrivals.length} products, Current slide: {currentSlide} */}
+              {/* Create a circular carousel by duplicating items */}
+              {[...newArrivals, ...newArrivals, ...newArrivals].map((product, index) => (
+                <div key={`${product.id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % newArrivals.length) * 0.1}s` }}>
+                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      width={300}
+                      height={400}
+                      className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-white px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
+                        New
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-4">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-2">{product.brand}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Navigation Arrows */}
+            <div className="absolute inset-0 pointer-events-none">
+              <button 
+                onClick={() => {
+                  console.log('Left arrow clicked, current slide:', currentSlide)
+                  handlePrevSlide()
+                }}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50 cursor-pointer pointer-events-auto"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <button 
+                onClick={() => {
+                  console.log('Right arrow clicked, current slide:', currentSlide)
+                  handleNextSlide()
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50 cursor-pointer pointer-events-auto"
+              >
+                <ChevronRight className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+          </div>
+          
+          {/* View All Button */}
+          <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+              View All New Arrivals
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* About Section - Moved below Hero */}
-      <section className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 font-allura">
-              About Alankarika
-            </h2>
-            <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              Welcome to Alankarika, where tradition meets contemporary elegance. 
-              Our journey began with a passion for creating jewelry that tells stories 
-              and celebrates life's precious moments. Each piece in our collection is 
-              meticulously crafted by skilled artisans who bring decades of expertise 
-              and cultural heritage to every design.
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed mb-12">
-              From classic diamond rings to modern statement pieces, we offer a 
-              diverse range of jewelry that caters to every style and occasion. 
-              Our commitment to quality, authenticity, and customer satisfaction 
-              has made us a trusted name in fine jewelry for over two decades.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-rose-600" />
+      {/* Latest Gems Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="text-center flex-1">
+              <h2 className="font-allura text-5xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>Latest Gems</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                Discover our most precious and exclusive gemstone jewelry collection, featuring rare stones and premium craftsmanship.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden">
+            <div className="flex gap-8 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentGemsSlide * 320}px)` }}>
+              {/* Create a circular carousel by duplicating items */}
+              {[...latestGems, ...latestGems, ...latestGems].map((product, index) => (
+                <div key={`${product.id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % latestGems.length) * 0.1}s` }}>
+                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      width={300}
+                      height={400}
+                      className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-blue-600 px-3 py-1 rounded-full text-sm font-semibold text-white">
+                        Premium
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-4">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-2">{product.brand}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
-                <p className="text-gray-600">Only the finest materials and gemstones</p>
+              ))}
+            </div>
+            
+            {/* Navigation Arrows */}
+            <div className="absolute inset-0 pointer-events-none">
+              <button 
+                onClick={() => {
+                  console.log('Left gems arrow clicked, current slide:', currentGemsSlide)
+                  handlePrevGemsSlide()
+                }}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50 cursor-pointer pointer-events-auto"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <button 
+                onClick={() => {
+                  console.log('Right gems arrow clicked, current slide:', currentGemsSlide)
+                  handleNextGemsSlide()
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50 cursor-pointer pointer-events-auto"
+              >
+                <ChevronRight className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+          </div>
+          
+          {/* View All Button */}
+          <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+              View All Latest Gems
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div>
+                <h2 className="font-allura text-5xl font-light text-gray-900 mb-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>About Alankarika</h2>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                  At Rose Jewels, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
+                  your precious moments, and your personal style. For over two decades, we've been dedicated to creating
+                  exquisite pieces that celebrate life's most beautiful moments.
+                </p>
+                <p className="text-gray-600 leading-relaxed mb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+                  Our master craftsmen combine traditional techniques with modern innovation to create jewelry that stands
+                  the test of time. Every piece is carefully designed and meticulously crafted using only the finest
+                  materials, ensuring that your jewelry remains as beautiful as the day you first wore it.
+                </p>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg animate-fade-in-up transition-all duration-300 hover:scale-105" style={{ animationDelay: '1s' }}>
+                  Learn More About Us
+                </Button>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-rose-600" />
+            </div>
+
+            <div className="relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <Image
+                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+                alt="Alankarika Logo"
+                width={800}
+                height={700}
+                className="rounded-2xl shadow-lg object-contain animate-fade-in-up transition-all duration-300 hover:scale-105"
+                style={{ animationDelay: '0.5s' }}
+              />
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-lg animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Star className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Premium Quality</p>
+                    <p className="text-sm text-gray-600">Certified & Authentic</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Handcrafted</h3>
-                <p className="text-gray-600">Each piece is uniquely crafted by artisans</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-rose-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Timeless Design</h3>
-                <p className="text-gray-600">Classic elegance that never goes out of style</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+     
+
       {/* Categories Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-allura">
-              Explore Our Collections
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Discover our carefully curated categories, each offering unique pieces 
-              that reflect different styles and occasions.
+      <section className="py-32 bg-white mt-32">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h2 className="font-allura text-5xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>Shop by Category</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+              Explore our diverse collection of jewelry categories, each carefully curated to suit every style and occasion.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <Link key={category.id} href={category.href} className="group">
-                <div className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                   <Image
-                    src={category.image}
+                    src={category.image || "/placeholder.svg"}
                     alt={category.name}
                     width={300}
-                    height={300}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                    height={400}
+                    className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
-                    <p className="text-sm opacity-90">{category.count} pieces</p>
+                  <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-50 transition-all duration-300"></div>
+                  <div className="absolute inset-0 flex flex-col justify-end p-6">
+                    <h3 className="text-2xl font-semibold text-white mb-2">{category.name}</h3>
+                    <p className="text-white opacity-90">{category.count} Products</p>
                   </div>
                 </div>
               </Link>
@@ -489,163 +551,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* New Arrivals Section */}
+      {/* Featured Products */}
       <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-allura">
-              New Arrivals
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Be the first to discover our latest additions, featuring the newest 
-              trends and timeless classics.
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h2 className="font-allura text-5xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>Featured Products</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+              Discover our handpicked selection of the finest jewelry pieces, crafted with precision and designed to make you shine.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {newArrivals.slice(0, 8).map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                <div className="relative">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={300}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                    loading="lazy"
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                  />
-                  {product.isNew && (
-                    <div className="absolute top-4 left-4 bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      NEW
-                    </div>
-                  )}
-                  <div className="absolute top-4 right-4 flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm text-white font-semibold">{product.rating}</span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl font-bold text-gray-900">{product.price}</span>
-                      <span className="text-lg text-gray-500 line-through">{product.originalPrice}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{product.reviews} reviews</span>
-                    <Link href={`/products/${product.id}`}>
-                      <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
+
+          {/* Instagram Style Carousel */}
+          <div className="flex justify-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+            <InstagramCarousel />
           </div>
-          
-          <div className="text-center mt-12">
-            <Link href="/shop">
-              <Button size="lg" className="bg-rose-600 hover:bg-rose-700">
-                View All New Arrivals
-                <ArrowRight className="ml-2 h-5 w-5" />
+
+          <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+            <Link href="/products">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent px-8 py-3 text-lg transition-all duration-300 hover:scale-105"
+              >
+                Explore All Products
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Latest Gems Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 font-allura">
-              Latest Gems
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore our most recent additions, featuring the finest gemstones 
-              and precious metals.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {latestGems.slice(0, 8).map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                <div className="relative">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={300}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                    loading="lazy"
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                  />
-                  <div className="absolute top-4 right-4 flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm text-white font-semibold">{product.rating}</span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl font-bold text-gray-900">{product.price}</span>
-                      <span className="text-lg text-gray-500 line-through">{product.originalPrice}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{product.reviews} reviews</span>
-                    <Link href={`/products/${product.id}`}>
-                      <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <Link href="/shop">
-              <Button size="lg" className="bg-rose-600 hover:bg-rose-700">
-                Explore All Gems
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* Newsletter Section */}
-      <section className="py-20 bg-gradient-to-r from-rose-500 to-pink-500">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 font-allura">
-            Stay Updated
-          </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Subscribe to our newsletter for exclusive offers, new arrivals, and 
-            jewelry care tips.
-          </p>
-          <div className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-3 rounded-lg border-0 focus:ring-2 focus:ring-white/20 focus:outline-none"
-              />
-              <Button size="lg" className="bg-white text-rose-600 hover:bg-gray-100">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
+     
+
+      <Footer />
     </div>
   )
 }
