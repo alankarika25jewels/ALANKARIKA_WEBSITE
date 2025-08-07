@@ -1,13 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Great_Vibes } from "next/font/google"
+ 
 
-const greatVibes = Great_Vibes({ 
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-})
 
 const items = [
   {
@@ -43,7 +38,7 @@ export default function PendantSection() {
     <section className="w-full h-screen p-2 bg-white mt-96">
       {/* Section Title */}
       <div className="text-center mb-8">
-        <h2 className={`${greatVibes.className} text-5xl font-light text-gray-900 mb-4`}>Pendants Collection</h2>
+        <h2 className="font-allura text-5xl font-light text-gray-900 mb-4">Pendants Collection</h2>
         <p className="text-gray-600 max-w-2xl mx-auto text-lg">
           Discover our exquisite collection of pendants and charms
         </p>

@@ -19,13 +19,13 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 -ml-32">
             <Image
-              src="/logo-rose.png"
-              alt="Rose Jewels Logo"
-              width={80}
-              height={80}
-              className="w-20 h-20"
+              src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+              alt="Alankarika Logo"
+              width={120}
+              height={120}
+              className="w-28 h-28"
             />
-            <span className="text-white text-2xl font-bold tracking-tight">Rose Jewels</span>
+            <span className="text-white text-2xl font-bold tracking-tight">Alankarika</span>
           </Link>
 
           {/* Search Bar - Desktop */}

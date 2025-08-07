@@ -13,17 +13,17 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
               <Image
-                src="/logo-rose.png"
-                alt="Rose Jewels Logo"
-                width={60}
-                height={60}
-                className="w-15 h-15"
+                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+                alt="Alankarika Logo"
+                width={100}
+                height={100}
+                className="w-24 h-24"
               />
-              <span className="text-2xl font-bold">Rose Jewels</span>
+              <span className="text-2xl font-bold">Alankarika</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
               Crafting timeless jewelry pieces that celebrate life's most precious moments. Quality, elegance, and
-              craftsmanship in every design at Rose Jewels.
+              craftsmanship in every design at Alankarika.
             </p>
             <div className="flex space-x-4">
               <a

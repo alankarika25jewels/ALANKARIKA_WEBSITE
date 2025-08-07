@@ -61,6 +61,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        allura: ["var(--font-allura)", "cursive"],
       },
       keyframes: {
         "accordion-down": {
