@@ -125,20 +125,8 @@ export default function Home() {
       price: "8,999.00",
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 14,
-      name: "Pearl Princess Set",
-      brand: "JEWELS BY LAHARI",
-      price: "2,499.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
-    {
-      id: 2,
-      name: "Deviya Lakshmi Necklace Set",
-      brand: "JEWELS BY LAHARI",
-      price: "1,219.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-    },
+   
+  
     {
       id: 3,
       name: "Flower Coin Choker Set",
@@ -146,13 +134,7 @@ export default function Home() {
       price: "699.00",
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 4,
-      name: "Rudrani R",
-      brand: "JEWELS BY LAHARI",
-      price: "1,299.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
+   
     {
       id: 5,
       name: "Krishna Pearl Necklace Set",
@@ -181,13 +163,7 @@ export default function Home() {
       price: "2,199.00",
       image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 9,
-      name: "Saraswati Pearl Earrings",
-      brand: "JEWELS BY LAHARI",
-      price: "1,099.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-    },
+  
     {
       id: 10,
       name: "Durga Gold Chain",
@@ -195,13 +171,7 @@ export default function Home() {
       price: "1,899.00",
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 11,
-      name: "Kali Silver Necklace",
-      brand: "JEWELS BY LAHARI",
-      price: "1,599.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
+  
     {
       id: 12,
       name: "Hanuman Gold Pendant",
@@ -226,20 +196,7 @@ export default function Home() {
       price: "12,999.00",
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 14,
-      name: "Imperial Emerald Set",
-      brand: "JEWELS BY LAHARI",
-      price: "9,899.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
-    {
-      id: 2,
-      name: "Emerald Gold Ring",
-      brand: "JEWELS BY LAHARI",
-      price: "2,899.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-    },
+   
     {
       id: 3,
       name: "Sapphire Pearl Earrings",
@@ -254,13 +211,7 @@ export default function Home() {
       price: "4,599.00",
       image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 5,
-      name: "Opal Silver Pendant",
-      brand: "JEWELS BY LAHARI",
-      price: "1,799.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
+  
     {
       id: 6,
       name: "Amethyst Gold Chain",
@@ -283,26 +234,14 @@ export default function Home() {
       image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop&auto=format",
     },
     {
-      id: 9,
-      name: "Aquamarine Pearl Necklace",
-      brand: "JEWELS BY LAHARI",
-      price: "2,699.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop&auto=format",
-    },
-    {
       id: 10,
       name: "Citrine Gold Earrings",
       brand: "JEWELS BY LAHARI",
       price: "1,599.00",
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop&auto=format",
     },
-    {
-      id: 11,
-      name: "Peridot Silver Bracelet",
-      brand: "JEWELS BY LAHARI",
-      price: "1,299.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop&auto=format",
-    },
+   
+   
     {
       id: 12,
       name: "Tanzanite Platinum Ring",
