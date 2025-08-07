@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 const categories = [
@@ -73,7 +73,7 @@ const ProductsDropdown = () => {
              {/* Products Tab */}
                <button className="px-4 py-2 text-sm text-black hover:text-gray-700 flex items-center gap-1 font-medium">
           Products
-          <FiChevronDown />
+          <ChevronDown />
         </button>
 
              {/* Category Dropdown */}
