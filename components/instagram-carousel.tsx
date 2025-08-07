@@ -218,7 +218,7 @@ const InstagramCarousel = () => {
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full border-2 border-yellow-400 mr-3 overflow-hidden">
                 <Image
-                  src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+                  src="/logoalan-removebg-preview.png"
                   alt="Alankarika"
                   width={60}
                   height={60}

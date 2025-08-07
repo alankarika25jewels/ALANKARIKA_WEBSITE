@@ -12,13 +12,15 @@ export default function Footer() {
           {/* Company Info */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
-              <Image
-                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
-                alt="Alankarika Logo"
-                width={100}
-                height={100}
-                className="w-24 h-24"
-              />
+              <div className="bg-white rounded-full">
+                <Image
+                  src="/logoalan-removebg-preview.png"
+                  alt="Alankarika Logo"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20"
+                />
+              </div>
               <span className="text-2xl font-bold">Alankarika</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
@@ -188,23 +190,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Newsletter Section */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-semibold mb-4">Stay Updated</h3>
-            <p className="text-gray-400 mb-6">Subscribe to our newsletter for exclusive offers and latest collections</p>
-            <div className="flex max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#C4A484]"
-              />
-              <button className="px-6 py-3 bg-[#C4A484] text-white rounded-r-lg hover:bg-[#B89474] transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">

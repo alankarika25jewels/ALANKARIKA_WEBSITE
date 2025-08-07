@@ -19,7 +19,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 -ml-32">
             <Image
-              src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+              src="/logoalan-removebg-preview.png"
               alt="Alankarika Logo"
               width={120}
               height={120}

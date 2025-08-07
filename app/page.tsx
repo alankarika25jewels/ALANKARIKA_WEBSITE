@@ -493,7 +493,7 @@ export default function Home() {
 
             <div className="relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               <Image
-                src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+                src="/logoalan-removebg-preview.png"
                 alt="Alankarika Logo"
                 width={800}
                 height={700}

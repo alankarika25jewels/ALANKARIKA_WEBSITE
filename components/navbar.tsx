@@ -18,11 +18,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-0.5 -ml-20">
   <Image
-    src="/WhatsApp_Image_2025-07-31_at_6.21.52_PM-removebg-preview.png"
+    src="/logoalan-removebg-preview.png"
     alt="Alankarika Logo"
     width={80}
     height={80}
-    className="w-20 h-20 object-contain scale-[1.8] -translate-y-1"
+    className="w-20 h-20 object-contain scale-[2.8] translate-y-1"
   />
 
 </Link>
