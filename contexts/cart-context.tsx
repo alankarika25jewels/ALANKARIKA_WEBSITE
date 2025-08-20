@@ -130,8 +130,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     itemCount: 0
   })
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount (only on client-side)
   useEffect(() => {
+    // Only run on client-side
+    if (typeof window === 'undefined') return
+    
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       try {
@@ -143,8 +146,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (only on client-side)
   useEffect(() => {
+    // Only run on client-side
+    if (typeof window === 'undefined') return
+    
     localStorage.setItem('cart', JSON.stringify(state.items))
   }, [state.items])
 

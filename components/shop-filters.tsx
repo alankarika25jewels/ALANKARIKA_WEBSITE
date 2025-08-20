@@ -11,6 +11,8 @@ export default function ShopFilters() {
     color: true,
   })
 
+
+
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({
       ...prev,

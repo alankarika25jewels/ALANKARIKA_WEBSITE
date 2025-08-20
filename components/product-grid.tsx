@@ -6,6 +6,7 @@ import { useCart } from "@/contexts/cart-context"
 
 export default function ProductGrid() {
   const { addItem } = useCart()
+
   const products = [
     {
       id: 1,

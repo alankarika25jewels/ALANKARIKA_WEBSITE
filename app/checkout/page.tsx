@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export default function CheckoutPage() {
@@ -28,9 +28,25 @@ export default function CheckoutPage() {
     paymentMethod: 'card'
   })
 
+
+
+  // Handle empty cart redirect on client side
+  useEffect(() => {
+    if (state.items.length === 0) {
+      router.push('/cart')
+    }
+  }, [state.items.length, router])
+
+  // Show loading state while checking cart
   if (state.items.length === 0) {
-    router.push('/cart')
-    return null
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to cart...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleInputChange = (field: string, value: string) => {

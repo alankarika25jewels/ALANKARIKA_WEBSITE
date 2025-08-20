@@ -14,6 +14,8 @@ export default function ProductDetail({ productId }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState("")
 
+
+
   // Mock product data - in real app, fetch based on productId
   const product = {
     id: productId,

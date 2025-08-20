@@ -1,3 +1,5 @@
+"use client"
+
 import Header from "@/components/header"
 import ProductDetail from "@/components/product-detail"
 import RelatedProducts from "@/components/related-products"
@@ -10,6 +12,7 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
+
   return (
     <div className="min-h-screen">
       <Header />

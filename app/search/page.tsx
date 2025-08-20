@@ -28,7 +28,9 @@ export default function SearchPage() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const { addItem } = useCart()
-  
+
+
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('featured')
   const [priceRange, setPriceRange] = useState([0, 10000])

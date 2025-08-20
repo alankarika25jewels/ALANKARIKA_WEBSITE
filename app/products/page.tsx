@@ -1,3 +1,5 @@
+"use client"
+
 import Header from "@/components/header"
 import ProductGrid from "@/components/product-grid"
 import ProductFilters from "@/components/product-filters"

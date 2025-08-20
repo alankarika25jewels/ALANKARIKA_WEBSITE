@@ -11,12 +11,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Star, Heart, Eye, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/contexts/cart-context"
 
 
 export default function Home() {
   const { addItem } = useCart()
+
+
+
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentGemsSlide, setCurrentGemsSlide] = useState(0)
   

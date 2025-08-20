@@ -61,6 +61,8 @@ const ProductsDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
+
+
   return (
     <div
       className="relative inline-block text-left"

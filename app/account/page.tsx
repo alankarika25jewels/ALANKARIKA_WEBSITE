@@ -24,7 +24,9 @@ import {
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile")
   const [isEditing, setIsEditing] = useState(false)
-  
+
+
+
   const [profileData, setProfileData] = useState({
     firstName: "Priya",
     lastName: "Sharma",

@@ -1,8 +1,11 @@
+"use client"
+
 import Header from "@/components/header"
 import ShopFilters from "@/components/shop-filters"
 import ProductGrid from "@/components/product-grid"
 
 export default function ShopPage() {
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

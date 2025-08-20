@@ -15,6 +15,8 @@ export default function ProductFilters() {
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([])
 
+
+
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({
       ...prev,
