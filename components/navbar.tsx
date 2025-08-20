@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Search, ChevronDown, Menu, X } from "lucide-react"
+import { Search, Menu, X } from "lucide-react"
 import { useState } from "react"
-import ProductsDropdown from "./products-dropdown"
+
 import CartIcon from "./cart-icon"
 
 export default function Navbar() {
@@ -13,7 +13,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-none" style={{ backgroundColor: '#F0E1B9FF' }}>
-              <div className="max-w-5xl px-0 lg:px-1 mx-auto">
+              <div className="max-w-5xl px-0 lg:pl-8 mx-auto">
         {/* Main navbar */}
         <div className="flex items-center justify-between py-0">
           {/* Logo */}
@@ -29,7 +29,7 @@ export default function Navbar() {
 </Link>
 
           {/* Search Bar - Desktop - Centered */}
-          <div className="hidden lg:flex flex-1 justify-center">
+          <div className="hidden lg:flex flex-1 justify-end ml-24">
             <form action="/search" method="GET" className="relative w-full max-w-md">
               <input
                 type="text"
@@ -44,21 +44,26 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2">
-                          <Link href="/" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
-                Home
-              </Link>
-              <ProductsDropdown />
-              <Link href="/about" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
-                About
-              </Link>
-              <Link href="/contact" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
-                Contact
-              </Link>
-              <Link href="/account" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
-                Account
-              </Link>
-              <CartIcon />
+          <div className="hidden lg:flex items-center space-x-8 ml-auto ml-16">
+            <Link href="/" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              Home
+            </Link>
+            <Link href="/about" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              About
+            </Link>
+            <Link href="/products" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              Products
+            </Link>
+            <Link href="/shop" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              Shop
+            </Link>
+            <Link href="/contact" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              Contact
+            </Link>
+            <Link href="/account" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+              Account
+            </Link>
+            <CartIcon />
           </div>
 
           {/* Mobile buttons */}
@@ -95,18 +100,24 @@ export default function Navbar() {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="lg:hidden pb-4">
-            <div className="flex flex-col space-y-4">
-              <Link href="/" className="text-black hover:text-gray-700">
+            <div className="flex flex-col space-y-6">
+              <Link href="/" className="text-black hover:text-gray-700 font-medium text-lg">
                 Home
               </Link>
-              <Link href="/products" className="text-black hover:text-gray-700">
-                Products
-              </Link>
-              <Link href="/about" className="text-black hover:text-gray-700">
+              <Link href="/about" className="text-black hover:text-gray-700 font-medium text-lg">
                 About
               </Link>
-              <Link href="/contact" className="text-black hover:text-gray-700">
+              <Link href="/products" className="text-black hover:text-gray-700 font-medium text-lg">
+                Products
+              </Link>
+              <Link href="/shop" className="text-black hover:text-gray-700 font-medium text-lg">
+                Shop
+              </Link>
+              <Link href="/contact" className="text-black hover:text-gray-700 font-medium text-lg">
                 Contact
+              </Link>
+              <Link href="/account" className="text-black hover:text-gray-700 font-medium text-lg">
+                Account
               </Link>
             </div>
           </div>
