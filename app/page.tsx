@@ -12,9 +12,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Star, Heart, Eye, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState } from "react"
+import { useCart } from "@/contexts/cart-context"
 
 
 export default function Home() {
+  const { addItem } = useCart()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentGemsSlide, setCurrentGemsSlide] = useState(0)
   
@@ -347,9 +349,26 @@ export default function Home() {
                     <p className="text-gray-600 text-sm mb-2">{product.brand}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                        View Details
-                      </Button>
+                      <div className="space-x-2">
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => addItem({
+                            id: product.id.toString(),
+                            name: product.name,
+                            price: parseFloat(product.price.replace(',', '')),
+                            image: product.image,
+                            category: "Jewelry",
+                            brand: product.brand
+                          })}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-1" />
+                          Add to Cart
+                        </Button>
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                          View Details
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -427,9 +446,26 @@ export default function Home() {
                     <p className="text-gray-600 text-sm mb-2">{product.brand}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                        View Details
-                      </Button>
+                      <div className="space-x-2">
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => addItem({
+                            id: product.id.toString(),
+                            name: product.name,
+                            price: parseFloat(product.price.replace(',', '')),
+                            image: product.image,
+                            category: "Jewelry",
+                            brand: product.brand
+                          })}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-1" />
+                          Add to Cart
+                        </Button>
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                          View Details
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

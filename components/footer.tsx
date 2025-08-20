@@ -106,7 +106,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#C4A484]" />
-                <span className="text-gray-400">info@rosejewels.com</span>
+                <span className="text-gray-400">info@alankarika.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-[#C4A484]" />
@@ -195,7 +195,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
-            <p className="text-gray-400 text-sm">© 2024 Rose Jewels. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© 2024 Alankarika. All rights reserved.</p>
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-[#C4A484]" />
               <span className="text-gray-400 text-sm">Premium Quality Since 1998</span>

@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Allura } from 'next/font/google'
 import './globals.css'
+import { CartProvider } from '@/contexts/cart-context'
 
 const allura = Allura({
   weight: '400',
@@ -34,7 +35,11 @@ html {
 }
         `}</style>
       </head>
-      <body className="overflow-x-hidden">{children}</body>
+      <body className="overflow-x-hidden">
+        <CartProvider>
+          {children}
+        </CartProvider>
+      </body>
     </html>
   )
 }

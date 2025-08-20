@@ -2,8 +2,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, ShoppingCart, Eye, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useCart } from "@/contexts/cart-context"
 
 export default function ProductGrid() {
+  const { addItem } = useCart()
   const products = [
     {
       id: 1,
@@ -143,7 +145,18 @@ export default function ProductGrid() {
 
             {/* Quick add to cart */}
             <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white">
+              <Button 
+                className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white"
+                onClick={() => addItem({
+                  id: product.id.toString(),
+                  name: product.name,
+                  price: product.price,
+                  originalPrice: product.originalPrice || undefined,
+                  image: product.image,
+                  category: product.category,
+                  brand: "Alankarika"
+                })}
+              >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Add to Cart
               </Button>

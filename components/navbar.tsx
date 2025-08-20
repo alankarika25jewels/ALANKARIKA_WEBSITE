@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Search, ChevronDown, Menu, X } from "lucide-react"
 import { useState } from "react"
 import ProductsDropdown from "./products-dropdown"
+import CartIcon from "./cart-icon"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -29,14 +30,17 @@ export default function Navbar() {
 
           {/* Search Bar - Desktop - Centered */}
           <div className="hidden lg:flex flex-1 justify-center">
-            <div className="relative w-full max-w-md">
+            <form action="/search" method="GET" className="relative w-full max-w-md">
               <input
                 type="text"
+                name="q"
                 placeholder="Search for jewelry..."
                 className="w-full px-3 py-1 rounded-lg border border-gray-300 text-black placeholder-gray-500 bg-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 text-sm"
               />
-              <Search className="absolute right-2 top-1.5 w-4 h-4 text-black" />
-            </div>
+              <button type="submit" className="absolute right-2 top-1.5">
+                <Search className="w-4 h-4 text-black" />
+              </button>
+            </form>
           </div>
 
           {/* Desktop Navigation */}
@@ -51,6 +55,10 @@ export default function Navbar() {
               <Link href="/contact" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
                 Contact
               </Link>
+              <Link href="/account" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
+                Account
+              </Link>
+              <CartIcon />
           </div>
 
           {/* Mobile buttons */}
@@ -70,14 +78,17 @@ export default function Navbar() {
         {/* Search bar - Mobile */}
         {isSearchOpen && (
           <div className="lg:hidden pb-4">
-            <div className="relative">
+            <form action="/search" method="GET" className="relative">
               <input
                 type="text"
+                name="q"
                 placeholder="Search for jewelry..."
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 text-black placeholder-gray-500 bg-white backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
               />
-              <Search className="absolute right-3 top-2.5 w-5 h-5 text-black" />
-            </div>
+              <button type="submit" className="absolute right-3 top-2.5">
+                <Search className="w-5 h-5 text-black" />
+              </button>
+            </form>
           </div>
         )}
 
