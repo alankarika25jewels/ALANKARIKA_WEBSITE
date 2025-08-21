@@ -10,97 +10,73 @@ export default function ProductGrid() {
   const products = [
     {
       id: 1,
-      name: "Diamond Elegance Ring",
-      price: 299.99,
-      originalPrice: 399.99,
-      image: "/placeholder.svg?height=300&width=300&text=Diamond+Ring",
-      category: "Rings",
+      name: "Aaradhya Minimal Necklace Set",
+      price: 1099.00,
+      originalPrice: null,
+      image: "/placeholder.svg?height=300&width=300&text=Aaradhya+Necklace",
+      category: "Necklaces",
       rating: 4.8,
       reviews: 124,
       isNew: true,
-      isSale: true,
+      isSale: false,
     },
     {
       id: 2,
-      name: "Pearl Drop Earrings",
-      price: 159.99,
+      name: "Deviya Lakshmi Necklace Set",
+      price: 1219.00,
       originalPrice: null,
-      image: "/placeholder.svg?height=300&width=300&text=Pearl+Earrings",
-      category: "Earrings",
+      image: "/placeholder.svg?height=300&width=300&text=Deviya+Lakshmi",
+      category: "Necklaces",
       rating: 4.9,
       reviews: 89,
-      isNew: false,
+      isNew: true,
       isSale: false,
     },
     {
       id: 3,
-      name: "Gold Chain Necklace",
-      price: 249.99,
-      originalPrice: 329.99,
-      image: "/placeholder.svg?height=300&width=300&text=Gold+Necklace",
+      name: "Flower Coin Choker Set",
+      price: 699.00,
+      originalPrice: null,
+      image: "/placeholder.svg?height=300&width=300&text=Flower+Choker",
       category: "Necklaces",
       rating: 4.7,
       reviews: 156,
       isNew: true,
-      isSale: true,
+      isSale: false,
     },
     {
       id: 4,
-      name: "Silver Charm Bracelet",
-      price: 89.99,
+      name: "Rudrani R Necklace Set",
+      price: 1299.00,
       originalPrice: null,
-      image: "/placeholder.svg?height=300&width=300&text=Silver+Bracelet",
-      category: "Bracelets",
+      image: "/placeholder.svg?height=300&width=300&text=Rudrani+Necklace",
+      category: "Necklaces",
       rating: 4.6,
       reviews: 203,
-      isNew: false,
+      isNew: true,
       isSale: false,
     },
     {
       id: 5,
-      name: "Ruby Statement Ring",
-      price: 449.99,
-      originalPrice: 599.99,
-      image: "/placeholder.svg?height=300&width=300&text=Ruby+Ring",
-      category: "Rings",
+      name: "Divine Gold Pendant",
+      price: 899.00,
+      originalPrice: null,
+      image: "/placeholder.svg?height=300&width=300&text=Divine+Gold",
+      category: "Pendants",
       rating: 4.9,
       reviews: 87,
       isNew: true,
-      isSale: true,
-    },
-    {
-      id: 6,
-      name: "Sapphire Stud Earrings",
-      price: 199.99,
-      originalPrice: null,
-      image: "/placeholder.svg?height=300&width=300&text=Sapphire+Earrings",
-      category: "Earrings",
-      rating: 4.8,
-      reviews: 145,
-      isNew: false,
       isSale: false,
     },
     {
-      id: 7,
-      name: "Vintage Locket Necklace",
-      price: 179.99,
-      originalPrice: 229.99,
-      image: "/placeholder.svg?height=300&width=300&text=Vintage+Locket",
-      category: "Necklaces",
-      rating: 4.7,
-      reviews: 98,
-      isNew: false,
-      isSale: true,
-    },
-    {
-      id: 8,
-      name: "Diamond Tennis Bracelet",
-      price: 599.99,
+      id: 6,
+      name: "Sacred Silver Ring",
+      price: 599.00,
       originalPrice: null,
-      image: "/placeholder.svg?height=300&width=300&text=Tennis+Bracelet",
-      category: "Bracelets",
-      rating: 4.9,
-      reviews: 76,
+      image: "/placeholder.svg?height=300&width=300&text=Sacred+Silver",
+      category: "Rings",
+      rating: 4.8,
+      reviews: 145,
       isNew: true,
       isSale: false,
     },
@@ -144,24 +120,7 @@ export default function ProductGrid() {
               </Link>
             </div>
 
-            {/* Quick add to cart */}
-            <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button 
-                className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white"
-                onClick={() => addItem({
-                  id: product.id.toString(),
-                  name: product.name,
-                  price: product.price,
-                  originalPrice: product.originalPrice || undefined,
-                  image: product.image,
-                  category: product.category,
-                  brand: "Alankarika"
-                })}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
-              </Button>
-            </div>
+
           </div>
 
           <div className="p-6">
@@ -187,17 +146,50 @@ export default function ProductGrid() {
               </h3>
             </Link>
 
-            <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600 mb-3">JEWELS BY LAHARI</p>
+
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-[#C4A484]">${product.price}</span>
+                <span className="text-xl font-bold text-[#C4A484]">₹{product.price}</span>
                 {product.originalPrice && (
-                  <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
+                  <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                 )}
               </div>
+            </div>
+
+            {/* Action Buttons - Horizontal Layout Below Price */}
+            <div className="flex space-x-3">
+              <Button 
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => addItem({
+                  id: product.id.toString(),
+                  name: product.name,
+                  price: product.price,
+                  originalPrice: product.originalPrice || undefined,
+                  image: product.image,
+                  category: product.category,
+                  brand: "JEWELS BY LAHARI"
+                })}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </Button>
+              <Link href={`/products/${product.id}`} className="flex-1">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  View Details
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       ))}
+      
+      {/* View All New Arrivals Button */}
+      <div className="text-center mt-12">
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium">
+          View All New Arrivals
+        </Button>
+      </div>
     </div>
   )
 }
