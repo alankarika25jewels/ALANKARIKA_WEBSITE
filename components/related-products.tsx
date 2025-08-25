@@ -4,45 +4,21 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, ShoppingCart, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useProducts } from "@/hooks/useProducts"
+import { useCart } from "@/contexts/cart-context"
 
 export default function RelatedProducts() {
+  const { products } = useProducts()
+  const { addItem } = useCart()
 
-  const relatedProducts = [
-    {
-      id: 2,
-      name: "Pearl Drop Earrings",
-      price: 159.99,
-      image: "/placeholder.svg?height=300&width=300&text=Pearl+Earrings",
-      rating: 4.9,
-      reviews: 89,
-    },
-    {
-      id: 3,
-      name: "Gold Chain Necklace",
-      price: 249.99,
-      originalPrice: 329.99,
-      image: "/placeholder.svg?height=300&width=300&text=Gold+Necklace",
-      rating: 4.7,
-      reviews: 156,
-    },
-    {
-      id: 4,
-      name: "Silver Charm Bracelet",
-      price: 89.99,
-      image: "/placeholder.svg?height=300&width=300&text=Silver+Bracelet",
-      rating: 4.6,
-      reviews: 203,
-    },
-    {
-      id: 5,
-      name: "Ruby Statement Ring",
-      price: 449.99,
-      originalPrice: 599.99,
-      image: "/placeholder.svg?height=300&width=300&text=Ruby+Ring",
-      rating: 4.9,
-      reviews: 87,
-    },
-  ]
+  // Get 4 random products (excluding the current one)
+  const relatedProducts = products
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 4)
+
+  if (relatedProducts.length === 0) {
+    return null
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -55,12 +31,12 @@ export default function RelatedProducts() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {relatedProducts.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300"
             >
               <div className="relative overflow-hidden">
                 <Image
-                  src={product.image || "/placeholder.svg"}
+                  src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
                   alt={product.name}
                   width={300}
                   height={300}
@@ -74,7 +50,18 @@ export default function RelatedProducts() {
                 </div>
 
                 <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Button className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white">
+                  <Button 
+                    className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white"
+                    onClick={() => addItem({
+                      id: product._id,
+                      name: product.name,
+                      price: product.price,
+                      originalPrice: product.originalPrice,
+                      image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                      category: product.category,
+                      brand: "JEWELS BY LAHARI"
+                    })}
+                  >
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Add to Cart
                   </Button>
@@ -96,17 +83,19 @@ export default function RelatedProducts() {
                   <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
                 </div>
 
-                <Link href={`/products/${product.id}`}>
+                <Link href={`/view-details?id=${product._id}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-[#C4A484] transition-colors">
                     {product.name}
                   </h3>
                 </Link>
 
-                <div className="flex items-center space-x-2">
-                  <span className="text-xl font-bold text-[#C4A484]">${product.price}</span>
-                  {product.originalPrice && (
-                    <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
-                  )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl font-bold text-[#C4A484]">₹{product.price.toFixed(2)}</span>
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <span className="text-sm text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

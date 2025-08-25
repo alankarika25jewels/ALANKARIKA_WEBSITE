@@ -7,21 +7,65 @@ import NecklaceSection from "@/components/necklace-section"
 import PendantSection from "@/components/pendant-section"
 import InstagramCarousel from "@/components/instagram-carousel"
 import JewelryLayout from "@/components/jewelry-layout"
+import FeaturedProducts from "@/components/featured-products"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Star, Heart, Eye, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useCart } from "@/contexts/cart-context"
-
+import { useProducts } from "@/hooks/useProducts"
 
 export default function Home() {
   const { addItem } = useCart()
-
-
+  const { products, loading, error } = useProducts()
 
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentGemsSlide, setCurrentGemsSlide] = useState(0)
+  
+  // Get real products from database
+  const featuredProducts = products.slice(0, 4)
+  const newArrivals = products.slice(0, 12)
+  const latestGems = products.slice(0, 8)
+  
+  // Show loading state if products are still loading
+  if (loading && products.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Navbar />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#C4A484] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading products...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  // Show error state if there's an error
+  if (error && products.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Navbar />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 text-lg">Error loading products: {error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 bg-[#C4A484] hover:bg-[#B39474]"
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
   
   const handlePrevSlide = () => {
     setCurrentSlide((prev: number) => prev === 0 ? newArrivals.length - 1 : prev - 1)
@@ -38,244 +82,35 @@ export default function Home() {
   const handleNextGemsSlide = () => {
     setCurrentGemsSlide((prev: number) => prev === latestGems.length - 1 ? 0 : prev + 1)
   }
-  
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Diamond Elegance Ring",
-      image: "/placeholder.svg?height=300&width=300&text=Diamond+Ring",
-      rating: 4.8,
-      reviews: 124,
-      isNew: true,
-    },
-    {
-      id: 2,
-      name: "Pearl Drop Earrings",
-      image: "/placeholder.svg?height=300&width=300&text=Pearl+Earrings",
-      rating: 4.9,
-      reviews: 89,
-      isNew: false,
-    },
-    {
-      id: 3,
-      name: "Gold Chain Necklace",
-      image: "/placeholder.svg?height=300&width=300&text=Gold+Necklace",
-      rating: 4.7,
-      reviews: 156,
-      isNew: true,
-    },
-    {
-      id: 4,
-      name: "Silver Charm Bracelet",
-      image: "/placeholder.svg?height=300&width=300&text=Silver+Bracelet",
-      rating: 4.6,
-      reviews: 203,
-      isNew: false,
-    },
-  ]
 
   const categories = [
     {
       id: 1,
       name: "Rings",
-      count: 45,
+      count: products.filter(p => p.category === "Rings").length,
       image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754041278/7K0A0299_jboywk.jpg",
       href: "/categories/rings",
     },
     {
       id: 2,
       name: "Necklaces",
-      count: 32,
+      count: products.filter(p => p.category === "Necklaces").length,
       image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754041775/RNK-387_mhmryo.jpg",
       href: "/categories/necklaces",
     },
     {
       id: 3,
       name: "Pendants",
-      count: 28,
+      count: products.filter(p => p.category === "Pendants").length,
       image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754042374/RP_2237_thzcn1.jpg",
       href: "/categories/earrings",
     },
     {
       id: 4,
       name: "Mangalsutra",
-      count: 19,
+      count: products.filter(p => p.category === "Mangalsutra").length,
       image: "https://res.cloudinary.com/djjj41z17/image/upload/v1754040744/1J8A0224_kecmbm.jpg",
       href: "/categories/bracelets",
-    },
-  ]
-
-  const newArrivals = [
-    {
-      id: 1,
-      name: "Aaradhya Minimal Necklace Set",
-      brand: "JEWELS BY LAHARI",
-      price: "1,099.00",
-      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Deviya Lakshmi Necklace Set",
-      brand: "JEWELS BY LAHARI",
-      price: "1,219.00",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 3,
-      name: "Flower Coin Choker Set",
-      brand: "JEWELS BY LAHARI",
-      price: "699.00",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
-    },
-    {
-      id: 4,
-      name: "Rudrani R",
-      brand: "JEWELS BY LAHARI",
-      price: "1,299.00",
-      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
-    },
-    {
-      id: 5,
-      name: "Krishna Pearl Necklace Set",
-      brand: "JEWELS BY LAHARI",
-      price: "899.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 6,
-      name: "Radha Gold Pendant Set",
-      brand: "JEWELS BY LAHARI",
-      price: "1,499.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
-    },
-    {
-      id: 7,
-      name: "Ganesh Silver Bracelet",
-      brand: "JEWELS BY LAHARI",
-      price: "799.00",
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
-    },
-    {
-      id: 8,
-      name: "Lakshmi Diamond Ring",
-      brand: "JEWELS BY LAHARI",
-      price: "2,199.00",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
-    },
-    {
-      id: 9,
-      name: "Saraswati Pearl Earrings",
-      brand: "JEWELS BY LAHARI",
-      price: "1,099.00",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 10,
-      name: "Durga Gold Chain",
-      brand: "JEWELS BY LAHARI",
-      price: "1,899.00",
-      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
-    },
-    {
-      id: 11,
-      name: "Kali Silver Necklace",
-      brand: "JEWELS BY LAHARI",
-      price: "1,599.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 12,
-      name: "Hanuman Gold Pendant",
-      brand: "JEWELS BY LAHARI",
-      price: "1,299.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
-    },
-  ]
-
-  const latestGems = [
-    {
-      id: 1,
-      name: "Ruby Diamond Necklace",
-      brand: "JEWELS BY LAHARI",
-      price: "3,299.00",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Emerald Gold Ring",
-      brand: "JEWELS BY LAHARI",
-      price: "2,899.00",
-      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
-    },
-    {
-      id: 3,
-      name: "Sapphire Pearl Earrings",
-      brand: "JEWELS BY LAHARI",
-      price: "1,999.00",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 4,
-      name: "Diamond Platinum Bracelet",
-      brand: "JEWELS BY LAHARI",
-      price: "4,599.00",
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
-    },
-    {
-      id: 5,
-      name: "Opal Silver Pendant",
-      brand: "JEWELS BY LAHARI",
-      price: "1,799.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 6,
-      name: "Amethyst Gold Chain",
-      brand: "JEWELS BY LAHARI",
-      price: "2,399.00",
-      image: "https://images.unsplash.com/photo-1603561591411-07134e71a2b9?w=400&h=400&fit=crop",
-    },
-    {
-      id: 7,
-      name: "Topaz Crystal Ring",
-      brand: "JEWELS BY LAHARI",
-      price: "1,899.00",
-      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop",
-    },
-    {
-      id: 8,
-      name: "Garnet Diamond Set",
-      brand: "JEWELS BY LAHARI",
-      price: "3,899.00",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop",
-    },
-    {
-      id: 9,
-      name: "Aquamarine Pearl Necklace",
-      brand: "JEWELS BY LAHARI",
-      price: "2,699.00",
-      image: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=400&h=400&fit=crop",
-    },
-    {
-      id: 10,
-      name: "Citrine Gold Earrings",
-      brand: "JEWELS BY LAHARI",
-      price: "1,599.00",
-      image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop",
-    },
-    {
-      id: 11,
-      name: "Peridot Silver Bracelet",
-      brand: "JEWELS BY LAHARI",
-      price: "1,299.00",
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop",
-    },
-    {
-      id: 12,
-      name: "Tanzanite Platinum Ring",
-      brand: "JEWELS BY LAHARI",
-      price: "5,299.00",
-      image: "https://images.unsplash.com/photo-1598560917505-e7d0c1a3e4c0?w=400&h=400&fit=crop",
     },
   ]
 
@@ -328,54 +163,94 @@ export default function Home() {
             <div className="flex gap-8 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentSlide * 320}px)` }}>
               {/* Debug: {newArrivals.length} products, Current slide: {currentSlide} */}
               {/* Create a circular carousel by duplicating items */}
-              {[...newArrivals, ...newArrivals, ...newArrivals].map((product, index) => (
-                <div key={`${product.id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % newArrivals.length) * 0.1}s` }}>
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      width={300}
-                      height={400}
-                      className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-white px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
-                        New
+              {loading ? (
+                // Loading state
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div key={`loading-${index}`} className="animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
+                    <div className="relative overflow-hidden rounded-2xl shadow-lg bg-gray-200 animate-pulse">
+                      <div className="w-full h-80 bg-gray-300"></div>
+                    </div>
+                    <div className="mt-4 p-4">
+                      <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-3 animate-pulse"></div>
+                      <div className="h-8 bg-gray-200 rounded mb-4 animate-pulse"></div>
+                      <div className="flex space-x-3">
+                        <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 p-4">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-3">{product.brand}</p>
-                    <div className="mb-4">
-                      <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
+                ))
+              ) : newArrivals.length === 0 ? (
+                // Empty state
+                <div className="text-center py-16">
+                  <p className="text-gray-500">No products available</p>
+                </div>
+              ) : (
+                [...newArrivals, ...newArrivals, ...newArrivals].map((product, index) => (
+                  <div key={`${product._id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % newArrivals.length) * 0.1}s` }}>
+                    <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <Image
+                        src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
+                        alt={product.name}
+                        width={300}
+                        height={400}
+                        className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                      {product.isNew && (
+                        <div className="absolute top-4 right-4">
+                          <div className="bg-white px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
+                            New
+                          </div>
+                        </div>
+                      )}
+                      {product.isOnSale && (
+                        <div className="absolute top-4 left-4">
+                          <div className="bg-red-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
+                            {product.offerPercentage}% OFF
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {/* Action Buttons - Horizontal Layout Below Price */}
-                    <div className="flex space-x-3">
-                      <Button 
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => addItem({
-                          id: product.id.toString(),
-                          name: product.name,
-                          price: parseFloat(product.price.replace(',', '')),
-                          image: product.image,
-                          category: "Jewelry",
-                          brand: product.brand
-                        })}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
-                      <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
-                        View Details
-                      </Button>
+                    <div className="mt-4 p-4">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3">JEWELS BY LAHARI</p>
+                      <div className="mb-4">
+                        <span className="text-2xl font-bold text-blue-600">₹{product.price.toFixed(2)}</span>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <span className="text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                        )}
+                      </div>
+                      {/* Action Buttons - Horizontal Layout Below Price */}
+                      <div className="flex space-x-3">
+                        <Button 
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => addItem({
+                            id: product._id,
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                            category: product.category,
+                            brand: "JEWELS BY LAHARI"
+                          })}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Add to Cart
+                        </Button>
+                        <Link href={`/view-details?id=${product._id}`}>
+                          <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             
             {/* Navigation Arrows */}
@@ -403,9 +278,11 @@ export default function Home() {
           
           {/* View All Button */}
           <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
-              View All New Arrivals
-            </Button>
+            <Link href="/products">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+                View All New Arrivals
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -425,54 +302,92 @@ export default function Home() {
           <div className="relative overflow-hidden">
             <div className="flex gap-8 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentGemsSlide * 320}px)` }}>
               {/* Create a circular carousel by duplicating items */}
-              {[...latestGems, ...latestGems, ...latestGems].map((product, index) => (
-                <div key={`${product.id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % latestGems.length) * 0.1}s` }}>
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      width={300}
-                      height={400}
-                      className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-blue-600 px-3 py-1 rounded-full text-sm font-semibold text-white">
-                        Premium
+              {loading ? (
+                // Loading state
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div key={`loading-gems-${index}`} className="animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
+                    <div className="relative overflow-hidden rounded-2xl shadow-lg bg-gray-200 animate-pulse">
+                      <div className="w-full h-80 bg-gray-300"></div>
+                    </div>
+                    <div className="mt-4 p-4">
+                      <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-3 animate-pulse"></div>
+                      <div className="h-8 bg-gray-200 rounded mb-4 animate-pulse"></div>
+                      <div className="flex space-x-3">
+                        <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 p-4">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-3">{product.brand}</p>
-                    <div className="mb-4">
-                      <span className="text-2xl font-bold text-blue-600">₹{product.price}</span>
+                ))
+              ) : latestGems.length === 0 ? (
+                // Empty state
+                <div className="text-center py-16">
+                  <p className="text-gray-500">No products available</p>
+                </div>
+              ) : (
+                [...latestGems, ...latestGems, ...latestGems].map((product, index) => (
+                  <div key={`${product._id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % latestGems.length) * 0.1}s` }}>
+                    <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <Image
+                        src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
+                        alt={product.name}
+                        width={300}
+                        height={400}
+                        className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                      <div className="absolute top-4 right-4">
+                        <div className="bg-blue-600 px-3 py-1 rounded-full text-sm font-semibold text-white">
+                          Premium
+                        </div>
+                      </div>
+                      {product.isOnSale && (
+                        <div className="absolute top-4 left-4">
+                          <div className="bg-red-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
+                            {product.offerPercentage}% OFF
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {/* Action Buttons - Horizontal Layout Below Price */}
-                    <div className="flex space-x-3">
-                      <Button 
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => addItem({
-                          id: product.id.toString(),
-                          name: product.name,
-                          price: parseFloat(product.price.replace(',', '')),
-                          image: product.image,
-                          category: "Jewelry",
-                          brand: product.brand
-                        })}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
-                      <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
-                        View Details
-                      </Button>
+                    <div className="mt-4 p-4">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3">JEWELS BY LAHARI</p>
+                      <div className="mb-4">
+                        <span className="text-2xl font-bold text-blue-600">₹{product.price.toFixed(2)}</span>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <span className="text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                        )}
+                      </div>
+                      {/* Action Buttons - Horizontal Layout Below Price */}
+                      <div className="flex space-x-3">
+                        <Button 
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => addItem({
+                            id: product._id,
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                            category: product.category,
+                            brand: "JEWELS BY LAHARI"
+                          })}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Add to Cart
+                        </Button>
+                        <Link href={`/view-details?id=${product._id}`}>
+                          <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             
             {/* Navigation Arrows */}
@@ -500,9 +415,11 @@ export default function Home() {
           
           {/* View All Button */}
           <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
-              View All Latest Gems
-            </Button>
+            <Link href="/products">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+                View All Latest Gems
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -569,7 +486,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category, index) => (
-              <Link key={category.id} href={category.href} className="group">
+              <Link key={category.id} href={`/products?category=${encodeURIComponent(category.name)}`} className="group">
                 <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                   <Image
                     src={category.image || "/placeholder.svg"}
@@ -602,7 +519,7 @@ export default function Home() {
 
           {/* Instagram Style Carousel */}
           <div className="flex justify-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-            <InstagramCarousel />
+            <FeaturedProducts />
           </div>
 
           <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>

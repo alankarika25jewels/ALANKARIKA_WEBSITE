@@ -3,8 +3,11 @@
 import Header from "@/components/header"
 import ShopFilters from "@/components/shop-filters"
 import ProductGrid from "@/components/product-grid"
+import { useProducts } from "@/hooks/useProducts"
+import { Button } from "@/components/ui/button"
 
 export default function ShopPage() {
+  const { products, loading, error } = useProducts()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,7 +27,25 @@ export default function ShopPage() {
                 <option>Newest First</option>
               </select>
             </div>
-            <ProductGrid />
+            
+            {loading && products.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#C4A484] mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading products...</p>
+              </div>
+            ) : error && products.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-red-600 text-lg">Error loading products: {error}</p>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 bg-[#C4A484] hover:bg-[#B39474]"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : (
+              <ProductGrid />
+            )}
           </main>
         </div>
       </div>

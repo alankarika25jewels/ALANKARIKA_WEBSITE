@@ -9,9 +9,12 @@ import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useOrders, CreateOrderData } from "@/hooks/useOrders"
+import { toast } from "@/hooks/use-toast"
 
 export default function CheckoutPage() {
   const { state, clearCart } = useCart()
+  const { createOrder } = useOrders()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -37,6 +40,11 @@ export default function CheckoutPage() {
     }
   }, [state.items.length, router])
 
+  // Debug form data changes
+  useEffect(() => {
+    console.log('Form data changed:', formData)
+  }, [formData])
+
   // Show loading state while checking cart
   if (state.items.length === 0) {
     return (
@@ -55,6 +63,21 @@ export default function CheckoutPage() {
 
   const handleNextStep = () => {
     if (currentStep < 3) {
+      // Validate current step before proceeding
+      if (currentStep === 1) {
+        const step1Fields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode']
+        const missingFields = step1Fields.filter(field => !formData[field as keyof typeof formData])
+        
+        if (missingFields.length > 0) {
+          toast({
+            title: "Missing Information",
+            description: `Please fill in: ${missingFields.join(', ')}`,
+            variant: "destructive",
+          })
+          return
+        }
+      }
+      
       setCurrentStep(currentStep + 1)
     }
   }
@@ -69,12 +92,80 @@ export default function CheckoutPage() {
     e.preventDefault()
     setIsProcessing(true)
     
-    // Simulate payment processing
-    setTimeout(() => {
+    console.log('Form data before submission:', formData)
+    console.log('Current step:', currentStep)
+    
+    // Validate form data
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode']
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData])
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields)
+      toast({
+        title: "Missing Information",
+        description: `Please fill in: ${missingFields.join(', ')}`,
+        variant: "destructive",
+      })
       setIsProcessing(false)
+      return
+    }
+    
+    try {
+      // Prepare order data
+      const orderData: CreateOrderData = {
+        customerDetails: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country
+        },
+        items: state.items.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          category: item.category
+        })),
+        subtotal: state.total,
+        tax: state.total * 0.18,
+        total: state.total + (state.total * 0.18),
+        paymentMethod: formData.paymentMethod as 'card' | 'upi' | 'cod'
+      }
+
+      console.log('Submitting order data:', JSON.stringify(orderData, null, 2))
+      console.log('Cart items:', state.items)
+      console.log('Customer details:', orderData.customerDetails)
+
+      // Create order in database
+      const order = await createOrder(orderData)
+      
+      console.log('Order created successfully:', order)
+      
+      // Show success message
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Order #${order.orderNumber} has been created.`,
+      })
+      
+      // Clear cart and redirect to success page
       clearCart()
       router.push('/checkout/success')
-    }, 2000)
+    } catch (error) {
+      console.error('Error placing order:', error)
+      toast({
+        title: "Error Placing Order",
+        description: "There was an error placing your order. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const total = state.total + (state.total * 0.18) // Including tax
