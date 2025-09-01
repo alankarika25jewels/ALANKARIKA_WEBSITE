@@ -63,9 +63,6 @@ export default function Navbar() {
             <Link href="/account" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
               Account
             </Link>
-            <Link href="/dashboard" className="text-black hover:text-gray-700 transition-colors font-medium text-sm">
-              Dashboard
-            </Link>
             <CartIcon />
           </div>
 
@@ -121,9 +118,6 @@ export default function Navbar() {
               </Link>
               <Link href="/account" className="text-black hover:text-gray-700 font-medium text-lg">
                 Account
-              </Link>
-              <Link href="/dashboard" className="text-black hover:text-gray-700 font-medium text-lg">
-                Dashboard
               </Link>
             </div>
           </div>

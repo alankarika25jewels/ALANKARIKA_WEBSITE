@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal } from "lucide-react"
+import { useState, useEffect } from "react"
+import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -10,10 +10,16 @@ import { useProducts } from "@/hooks/useProducts"
 import { useOrders } from "@/hooks/useOrders"
 import ProductForm from "@/components/ProductForm"
 import OrderDetailModal from "@/components/OrderDetailModal"
+import LoginForm from "@/components/LoginForm"
 
 export default function DashboardPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, updateOrder } = useOrders()
+  
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loginError, setLoginError] = useState("")
+  
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders'>('dashboard')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
@@ -23,6 +29,36 @@ export default function DashboardPage() {
   })
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
+
+  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    const authStatus = localStorage.getItem('dashboard_authenticated')
+    if (authStatus === 'true') {
+      setIsAuthenticated(true)
+    }
+  }, [])
+
+  // Handle login
+  const handleLogin = (username: string, password: string) => {
+    if (username === 'admin_01' && password === 'admin@123') {
+      setIsAuthenticated(true)
+      setLoginError("")
+      localStorage.setItem('dashboard_authenticated', 'true')
+    } else {
+      setLoginError("Invalid username or password")
+    }
+  }
+
+  // Handle logout
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    localStorage.removeItem('dashboard_authenticated')
+  }
+
+  // If not authenticated, show login form
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={handleLogin} error={loginError} />
+  }
 
   const handleCreateProduct = async (productData: any) => {
     try {
@@ -545,7 +581,8 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, Admin</span>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
             </div>
@@ -580,6 +617,14 @@ export default function DashboardPage() {
               >
                 <Package className="w-5 h-5 mr-3" />
                 Orders & Inventory
+              </button>
+              
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-red-600 hover:bg-red-50 hover:text-red-700 mt-8"
+              >
+                <LogOut className="w-5 h-5 mr-3" />
+                Logout
               </button>
             </nav>
           </div>
