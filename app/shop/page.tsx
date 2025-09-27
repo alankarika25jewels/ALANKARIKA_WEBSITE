@@ -1,6 +1,6 @@
 "use client"
 
-import Header from "@/components/header"
+import Navbar from "@/components/navbar"
 import ShopFilters from "@/components/shop-filters"
 import ProductGrid from "@/components/product-grid"
 import { useProducts } from "@/hooks/useProducts"
@@ -11,7 +11,9 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="lg:w-1/4">

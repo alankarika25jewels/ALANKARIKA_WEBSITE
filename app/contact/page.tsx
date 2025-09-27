@@ -1,4 +1,4 @@
-import Header from "@/components/header"
+import Navbar from "@/components/navbar"
 import ContactForm from "@/components/contact-form"
 import Footer from "@/components/footer"
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
@@ -6,7 +6,9 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react"
 export default function ContactPage() {
   return (
     <div className="min-h-screen">
-      <Header />
+      <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="text-center mb-12">

@@ -1,120 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Order from '@/lib/models/Order'
+import jwt from 'jsonwebtoken'
+import { connectToDatabase } from '@/lib/mongodb-native'
+import { ObjectId } from 'mongodb'
 
-export async function POST(request: NextRequest) {
-  try {
-    console.log('Connecting to database...')
-    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI)
-    await connectDB()
-    console.log('Database connected successfully')
-    
-    const body = await request.json()
-    console.log('Request body:', JSON.stringify(body, null, 2))
-    
-    const {
-      customerDetails,
-      items,
-      subtotal,
-      tax,
-      total,
-      paymentMethod
-    } = body
-
-    // Validate required fields
-    if (!customerDetails || !items || !subtotal || !tax || !total || !paymentMethod) {
-      console.log('Missing required fields:', { customerDetails: !!customerDetails, items: !!items, subtotal: !!subtotal, tax: !!tax, total: !!total, paymentMethod: !!paymentMethod })
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    console.log('Creating new order...')
-    // Create new order
-    const order = new Order({
-      customerDetails,
-      items,
-      subtotal,
-      tax,
-      total,
-      paymentMethod
-    })
-
-    console.log('Order object created:', JSON.stringify(order, null, 2))
-    console.log('Saving order to database...')
-    
-    await order.save()
-    console.log('Order saved successfully:', order.orderNumber)
-
-    return NextResponse.json(
-      { 
-        success: true, 
-        order: order,
-        message: 'Order placed successfully' 
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    console.error('Error creating order:', error)
-    return NextResponse.json(
-      { error: `Failed to create order: ${error instanceof Error ? error.message : 'Unknown error'}` },
-      { status: 500 }
-    )
-  }
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB()
-    
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const status = searchParams.get('status')
-    const search = searchParams.get('search')
+    // Get token from cookies
+    const token = request.cookies.get('auth-token')?.value
 
-    const skip = (page - 1) * limit
-
-    // Build query
-    let query: any = {}
-    
-    if (status && status !== 'all') {
-      query.orderStatus = status
-    }
-    
-    if (search) {
-      query.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { 'customerDetails.firstName': { $regex: search, $options: 'i' } },
-        { 'customerDetails.lastName': { $regex: search, $options: 'i' } },
-        { 'customerDetails.email': { $regex: search, $options: 'i' } }
-      ]
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    // Get orders with pagination
-    const orders = await Order.find(query)
+    // Verify token
+    const decoded: any = jwt.verify(token, JWT_SECRET)
+    const userId = decoded.userId
+
+    // Get userId from query params (for admin purposes)
+    const url = new URL(request.url)
+    const queryUserId = url.searchParams.get('userId')
+
+    // Use query userId if provided and user is admin, otherwise use token userId
+    const targetUserId = queryUserId || userId
+
+    // Connect to database
+    const { db } = await connectToDatabase()
+
+    // Fetch orders for the user
+    const orders = await db.collection('orders')
+      .find({ userId: targetUserId })
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('items.productId', 'name images')
+      .toArray()
 
-    // Get total count for pagination
-    const total = await Order.countDocuments(query)
+    // Format orders for response
+    const formattedOrders = orders.map(order => ({
+      _id: order._id.toString(),
+      orderNumber: order.orderNumber,
+      status: order.status,
+      total: order.total,
+      items: order.items,
+      shippingAddress: order.shippingAddress,
+      paymentMethod: order.paymentMethod,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt
+    }))
 
     return NextResponse.json({
-      orders,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    })
+      success: true,
+      orders: formattedOrders
+    }, { status: 200 })
+
   } catch (error) {
-    console.error('Error fetching orders:', error)
+    console.error('Orders fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch orders' },
+      { message: 'Internal server error' },
       { status: 500 }
     )
   }

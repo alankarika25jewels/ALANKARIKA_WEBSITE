@@ -4,18 +4,21 @@ import { useCart } from "@/contexts/cart-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react"
+
+import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle, User, Lock, Mail } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useOrders, CreateOrderData } from "@/hooks/useOrders"
 import { toast } from "@/hooks/use-toast"
+import Navbar from "@/components/navbar"
+import Footer from "@/components/footer"
 
 export default function CheckoutPage() {
-  const { state, clearCart } = useCart()
+  const { state, clearCart, addItem, updateQuantity } = useCart()
   const { createOrder } = useOrders()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,14 +34,149 @@ export default function CheckoutPage() {
     paymentMethod: 'card'
   })
 
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [isLogin, setIsLogin] = useState(true)
+  const [authData, setAuthData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: ''
+  })
+  const [authLoading, setAuthLoading] = useState(false)
 
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const userData = await response.json()
+          setIsAuthenticated(true)
+          setFormData(prev => ({
+            ...prev,
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
+            email: userData.email || ''
+          }))
+        } else {
+          setShowAuthModal(true)
+        }
+      } catch (error) {
+        // User is not authenticated, show auth modal
+        setShowAuthModal(true)
+      }
+    }
+
+    checkAuth()
+  }, [])
+
+  // Handle direct product purchase from Buy Now button
+  useEffect(() => {
+    const productId = searchParams.get('product')
+    const quantity = parseInt(searchParams.get('quantity') || '1')
+    
+    if (productId && state.items.length === 0) {
+      // Fetch product details and add to cart
+      const fetchAndAddProduct = async () => {
+        try {
+          const response = await fetch(`/api/products/${productId}`)
+          const data = await response.json()
+          
+          if (data.success && data.data) {
+            const product = data.data
+            addItem({
+              id: product._id,
+              name: product.name,
+              price: product.price,
+              originalPrice: product.originalPrice,
+              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+              category: product.category,
+              brand: "JEWELS BY LAHARI"
+            })
+            
+            // Set the quantity if it's not 1
+            if (quantity > 1) {
+              setTimeout(() => {
+                updateQuantity(product._id, quantity)
+              }, 100)
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch product:', error)
+          router.push('/cart')
+        }
+      }
+      
+      fetchAndAddProduct()
+    }
+  }, [searchParams, state.items.length, addItem, router])
 
   // Handle empty cart redirect on client side
   useEffect(() => {
-    if (state.items.length === 0) {
+    if (state.items.length === 0 && !searchParams.get('product')) {
       router.push('/cart')
     }
-  }, [state.items.length, router])
+  }, [state.items.length, router, searchParams])
+
+  // Authentication functions
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthLoading(true)
+
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(authData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+        setShowAuthModal(false)
+        setFormData(prev => ({
+          ...prev,
+          firstName: data.user.firstName || '',
+          lastName: data.user.lastName || '',
+          email: data.user.email || ''
+        }))
+        toast({
+          title: isLogin ? "Login Successful" : "Registration Successful",
+          description: isLogin ? "Welcome back!" : "Account created successfully!",
+        })
+      } else {
+        toast({
+          title: "Authentication Failed",
+          description: data.message || "Please try again",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleAuthInputChange = (field: string, value: string) => {
+    setAuthData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
   // Debug form data changes
   useEffect(() => {
@@ -170,9 +308,134 @@ export default function CheckoutPage() {
 
   const total = state.total + (state.total * 0.18) // Including tax
 
+  // Show authentication modal if not authenticated
+  if (showAuthModal && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        {/* Top spacing to prevent navbar overlap */}
+        <div className="h-20"></div>
+        <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+          <div className="max-w-md w-full space-y-8 p-8">
+            <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
+              <div className="text-center">
+                <div className="mx-auto h-12 w-12 bg-[#8B7355] rounded-full flex items-center justify-center mb-4">
+                  <Lock className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {isLogin ? 'Sign In to Continue' : 'Create Account'}
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  {isLogin 
+                    ? 'Please sign in to proceed with your order' 
+                    : 'Create an account to complete your purchase'
+                  }
+                </p>
+              </div>
+
+              <form onSubmit={handleAuth} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input
+                          id="firstName"
+                          type="text"
+                          value={authData.firstName}
+                          onChange={(e) => handleAuthInputChange('firstName', e.target.value)}
+                          required={!isLogin}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          type="text"
+                          value={authData.lastName}
+                          onChange={(e) => handleAuthInputChange('lastName', e.target.value)}
+                          required={!isLogin}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={authData.email}
+                    onChange={(e) => handleAuthInputChange('email', e.target.value)}
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={authData.password}
+                    onChange={(e) => handleAuthInputChange('password', e.target.value)}
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                {!isLogin && (
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={authData.confirmPassword}
+                      onChange={(e) => handleAuthInputChange('confirmPassword', e.target.value)}
+                      required={!isLogin}
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[#8B7355] hover:bg-[#D4AF37] text-white"
+                  disabled={authLoading}
+                >
+                  {authLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-[#8B7355] hover:text-[#D4AF37] text-sm font-medium"
+                >
+                  {isLogin 
+                    ? "Don't have an account? Create one" 
+                    : "Already have an account? Sign in"
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-4 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
+      <div className="py-12">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link href="/cart" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
@@ -306,17 +569,22 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <Label htmlFor="country">Country</Label>
-                      <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="India">India</SelectItem>
-                          <SelectItem value="USA">USA</SelectItem>
-                          <SelectItem value="UK">UK</SelectItem>
-                          <SelectItem value="Canada">Canada</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <select
+                        id="country"
+                        value={formData.country}
+                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        required
+                      >
+                        <option value="India">India</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="France">France</option>
+                        <option value="Japan">Japan</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -438,7 +706,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
               
               <div className="space-y-4 mb-6">
@@ -465,21 +733,23 @@ export default function CheckoutPage() {
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
                   <Truck className="w-4 h-4 text-green-600" />
-                  <span>Free standard shipping</span>
+                  <span className="select-none">Free standard shipping</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Shield className="w-4 h-4 text-blue-600" />
-                  <span>Secure payment</span>
+                  <span className="select-none">Secure payment</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>30-day return policy</span>
+                  <span className="select-none">30-day return policy</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </div>
       </div>
+      <Footer />
     </div>
   )
 }

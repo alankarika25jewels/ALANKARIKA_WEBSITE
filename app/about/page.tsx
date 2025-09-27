@@ -20,6 +20,8 @@ export default function AboutPage() {
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Navbar */}
       <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
       {/* Hero Section */}
       <section className="relative min-h-screen overflow-hidden">
         <Image
@@ -31,7 +33,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-black/40" />
                  <div className="absolute inset-0 flex items-center justify-center">
            <div className="text-center text-white">
-             <h1 className="text-6xl lg:text-7xl font-light mb-6">About Rose Jewels</h1>
+             <h1 className="text-6xl lg:text-7xl font-light mb-6">About Alankarika</h1>
              <p className="text-2xl lg:text-3xl max-w-3xl mx-auto">
                Crafting timeless elegance since 1998
              </p>
@@ -49,7 +51,7 @@ export default function AboutPage() {
                 A Legacy of Craftsmanship
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Founded in 1998, Rose Jewels began as a small family workshop with a simple mission: 
+                Founded in 1998, Alankarika began as a small family workshop with a simple mission: 
                 to create jewelry that tells stories. What started with a single artisan crafting pieces 
                 by hand has grown into a beloved brand, but our commitment to quality and personal touch 
                 remains unchanged.
@@ -243,7 +245,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Email Us</h3>
-                    <p className="text-gray-600">hello@rosejewels.com</p>
+                    <p className="text-gray-600">hello@alankarika.com</p>
                   </div>
                 </div>
               </div>

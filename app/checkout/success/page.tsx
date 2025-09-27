@@ -3,12 +3,16 @@
 import { CheckCircle, Package, Truck, Home, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Navbar from "@/components/navbar"
+import Footer from "@/components/footer"
 
 export default function CheckoutSuccessPage() {
 
   return (
-    <div className="min-h-screen bg-gray-50 py-20">
-      <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="py-20">
+        <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center">
         {/* Success Icon */}
         <div className="mb-8">
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -112,7 +116,9 @@ export default function CheckoutSuccessPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
+      <Footer />
     </div>
   )
 }

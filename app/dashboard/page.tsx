@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, LogOut } from "lucide-react"
+import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, Lock, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -10,16 +10,10 @@ import { useProducts } from "@/hooks/useProducts"
 import { useOrders } from "@/hooks/useOrders"
 import ProductForm from "@/components/ProductForm"
 import OrderDetailModal from "@/components/OrderDetailModal"
-import LoginForm from "@/components/LoginForm"
 
 export default function DashboardPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, updateOrder } = useOrders()
-  
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loginError, setLoginError] = useState("")
-  
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders'>('dashboard')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
@@ -29,35 +23,126 @@ export default function DashboardPage() {
   })
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
+  
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+
+  // Login function
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError('')
+    
+    if (username === 'admin_01' && password === 'admin@123') {
+      setIsAuthenticated(true)
+      // Store authentication in localStorage for persistence
+      localStorage.setItem('dashboardAuth', 'true')
+    } else {
+      setLoginError('Invalid username or password')
+      setPassword('') // Clear password on failed attempt
+    }
+  }
 
   // Check if user is already authenticated on component mount
   useEffect(() => {
-    const authStatus = localStorage.getItem('dashboard_authenticated')
+    const authStatus = localStorage.getItem('dashboardAuth')
     if (authStatus === 'true') {
       setIsAuthenticated(true)
     }
   }, [])
 
-  // Handle login
-  const handleLogin = (username: string, password: string) => {
-    if (username === 'admin_01' && password === 'admin@123') {
-      setIsAuthenticated(true)
-      setLoginError("")
-      localStorage.setItem('dashboard_authenticated', 'true')
-    } else {
-      setLoginError("Invalid username or password")
-    }
-  }
-
-  // Handle logout
+  // Logout function
   const handleLogout = () => {
     setIsAuthenticated(false)
-    localStorage.removeItem('dashboard_authenticated')
+    localStorage.removeItem('dashboardAuth')
+    setUsername('')
+    setPassword('')
   }
 
   // If not authenticated, show login form
   if (!isAuthenticated) {
-    return <LoginForm onLogin={handleLogin} error={loginError} />
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        {/* Top spacing to prevent navbar overlap */}
+        <div className="h-20 absolute top-0 left-0 right-0"></div>
+        <div className="max-w-md w-full space-y-8">
+          <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
+            <div className="text-center">
+              <div className="mx-auto h-12 w-12 bg-[#C4A484] rounded-full flex items-center justify-center">
+                <Lock className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="mt-6 text-3xl font-bold text-gray-900">Admin Login</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Enter your credentials to access the dashboard
+              </p>
+            </div>
+            
+            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    Username
+                  </label>
+                  <div className="mt-1 relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="username"
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10"
+                      placeholder="Enter username"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <div className="mt-1 relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10"
+                      placeholder="Enter password"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
+                  {loginError}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full bg-[#C4A484] hover:bg-[#B39474] text-white"
+              >
+                Sign In
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-500">
+                Demo Credentials:<br />
+                Username: <span className="font-mono bg-gray-100 px-1 rounded">admin_01</span><br />
+                Password: <span className="font-mono bg-gray-100 px-1 rounded">admin@123</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const handleCreateProduct = async (productData: any) => {
@@ -574,6 +659,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
       {/* Top Navigation Bar */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="px-6 py-4">
@@ -582,7 +669,6 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, Admin</span>
               <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
             </div>
@@ -617,14 +703,6 @@ export default function DashboardPage() {
               >
                 <Package className="w-5 h-5 mr-3" />
                 Orders & Inventory
-              </button>
-              
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-red-600 hover:bg-red-50 hover:text-red-700 mt-8"
-              >
-                <LogOut className="w-5 h-5 mr-3" />
-                Logout
               </button>
             </nav>
           </div>

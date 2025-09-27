@@ -5,7 +5,8 @@ import { Search, Filter, X, Star, Heart, Eye, ShoppingCart, Grid, List } from 'l
 import { Button } from '@/components/ui/button'
 import { useProducts } from '@/hooks/useProducts'
 import { useCart } from '@/contexts/cart-context'
-import Header from '@/components/header'
+import { useSearchParams } from 'next/navigation'
+import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import Link from 'next/link'
 
@@ -22,11 +23,14 @@ interface Product {
   isOnSale: boolean
   offerPercentage?: number
   createdAt?: string
+  description?: string
+  keyFeatures?: string[]
 }
 
 export default function SearchPage() {
   const { products, loading, error } = useProducts()
   const { addItem } = useCart()
+  const searchParams = useSearchParams()
   
   const [query, setQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -35,12 +39,24 @@ export default function SearchPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
 
+  // Read query from URL parameters on component mount
+  useEffect(() => {
+    const urlQuery = searchParams.get('q')
+    if (urlQuery) {
+      setQuery(urlQuery)
+    }
+  }, [searchParams])
+
   const categories = ["Rings", "Necklaces", "Earrings", "Bracelets", "Pendants", "Anklets"]
 
   // Filter and sort products
   const filteredProducts = products.filter(product => {
-    const matchesQuery = product.name.toLowerCase().includes(query.toLowerCase()) ||
-                        product.category.toLowerCase().includes(query.toLowerCase())
+    const searchTerm = query.toLowerCase()
+    const matchesQuery = !query || 
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        product.category.toLowerCase().includes(searchTerm) ||
+                        product.description?.toLowerCase().includes(searchTerm) ||
+                        product.keyFeatures?.some(feature => feature.toLowerCase().includes(searchTerm))
     
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category)
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
@@ -76,7 +92,9 @@ export default function SearchPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <Navbar />
+        {/* Top spacing to prevent navbar overlap */}
+        <div className="h-20"></div>
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
@@ -91,7 +109,9 @@ export default function SearchPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <Navbar />
+        {/* Top spacing to prevent navbar overlap */}
+        <div className="h-20"></div>
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
           <div className="text-center">
             <p className="text-red-600">Error loading products: {error}</p>
@@ -104,12 +124,21 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
       
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         {/* Search Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-light text-gray-900 mb-4">Search Products</h1>
+          <h1 className="text-3xl font-light text-gray-900 mb-4">
+            {query ? `Search Results for "${query}"` : 'Search Products'}
+          </h1>
+          {query && (
+            <p className="text-gray-600 mb-4">
+              Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} matching your search
+            </p>
+          )}
           
           {/* Search Bar */}
           <div className="relative max-w-2xl">

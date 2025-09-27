@@ -6,6 +6,7 @@ import { Heart, ShoppingCart, Star, Plus, Minus, Share2, Truck, RotateCcw, Shiel
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 
 interface Product {
   _id: string
@@ -160,7 +161,7 @@ export default function ProductDetail() {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`aspect-square overflow-hidden rounded-lg border-2 ${
-                      selectedImage === index ? "border-[#C4A484]" : "border-gray-200"
+                      selectedImage === index ? "border-[#8B7355]" : "border-gray-200"
                     }`}
                   >
                     <Image
@@ -196,7 +197,7 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-[#C4A484]">₹{product.price.toFixed(2)}</span>
+                <span className="text-3xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
                 {product.originalPrice && product.originalPrice > product.price && (
                   <span className="text-xl text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
                 )}
@@ -216,7 +217,7 @@ export default function ProductDetail() {
                   <ul className="space-y-2">
                     {product.keyFeatures.map((feature, index) => (
                       <li key={index} className="flex items-center text-gray-700">
-                        <span className="w-2 h-2 bg-[#C4A484] rounded-full mr-3"></span>
+                        <span className="w-2 h-2 bg-[#8B7355] rounded-full mr-3"></span>
                         {feature}
                       </li>
                     ))}
@@ -235,8 +236,8 @@ export default function ProductDetail() {
                         onClick={() => setSelectedSize(size.trim())}
                         className={`px-4 py-2 border rounded-lg transition-colors ${
                           selectedSize === size.trim()
-                            ? "border-[#C4A484] bg-[#C4A484] text-white"
-                            : "border-gray-300 hover:border-[#C4A484]"
+                            ? "border-[#8B7355] bg-[#8B7355] text-white"
+                            : "border-gray-300 hover:border-[#8B7355]"
                         }`}
                       >
                         {size.trim()}
@@ -275,11 +276,16 @@ export default function ProductDetail() {
               <div className="flex space-x-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-[#C4A484] hover:bg-[#B39474] text-white py-3 text-lg"
+                  className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white py-3 text-lg"
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Add to Cart
                 </Button>
+                <Link href={`/checkout?product=${product._id}&quantity=${quantity}`}>
+                  <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white py-3 text-lg">
+                    Buy Now
+                  </Button>
+                </Link>
                 <Button variant="outline" className="px-6 py-3">
                   <Heart className="w-5 h-5" />
                 </Button>

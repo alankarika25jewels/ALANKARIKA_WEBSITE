@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react"
 import { useProducts } from "@/hooks/useProducts"
 import { useSearchParams } from "next/navigation"
-import Header from "@/components/header"
+import { useCart } from "@/contexts/cart-context"
+import Navbar from "@/components/navbar"
 import ProductGrid from "@/components/product-grid"
 import ProductFilters from "@/components/product-filters"
 import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Filter, X } from "lucide-react"
+import Link from "next/link"
 
 interface FilterState {
   categories: string[]
@@ -22,8 +24,9 @@ interface FilterState {
 
 export default function ProductsPage() {
   const { products, loading } = useProducts()
+  const { addItem } = useCart()
   const searchParams = useSearchParams()
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('featured')
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
@@ -133,13 +136,15 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
-      <div className="bg-gray-50 py-8">
+      <Navbar />
+      {/* Top spacing to prevent navbar overlap */}
+      <div className="h-20"></div>
+      <div className="bg-gray-50 py-6 md:py-8">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           {/* Breadcrumb Navigation */}
           {filters.categories.length > 0 && (
-            <div className="mb-6">
-              <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="mb-4 md:mb-6">
+              <nav className="flex items-center space-x-2 text-xs md:text-sm text-gray-600">
                 <a href="/products" className="hover:text-[#C4A484] transition-colors">
                   All Products
                 </a>
@@ -149,14 +154,14 @@ export default function ProductsPage() {
             </div>
           )}
 
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-light text-gray-900 mb-4">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-gray-900 mb-3 md:mb-4">
               {filters.categories.length > 0 
                 ? `${filters.categories[0]} Collection` 
                 : 'All Products'
               }
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base px-4">
               {filters.categories.length > 0 
                 ? `Discover our exclusive collection of ${filters.categories[0].toLowerCase()} pieces, each designed to make you shine bright.`
                 : 'Discover our complete collection of handcrafted jewelry pieces, each designed to make you shine bright.'
@@ -164,42 +169,64 @@ export default function ProductsPage() {
             </p>
           </div>
 
-          {/* Mobile Filter Toggle */}
-          <div className="lg:hidden mb-6">
-            <Button
-              onClick={() => setShowFilters(!showFilters)}
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
-              {activeFiltersCount > 0 && (
-                <span className="bg-[#C4A484] text-white text-xs px-2 py-1 rounded-full">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Filters Sidebar */}
-            <aside className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8">
+            {/* Filters Sidebar - Desktop */}
+            <aside className="hidden lg:block lg:w-1/4">
               <ProductFilters 
                 filters={filters}
                 onFiltersChange={setFilters}
               />
             </aside>
 
+            {/* Mobile Filters Modal */}
+            {showFilters && (
+              <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+                <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl overflow-y-auto">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Filters</h3>
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                    <ProductFilters 
+                      filters={filters}
+                      onFiltersChange={setFilters}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Main Content */}
             <main className="lg:w-3/4">
+              {/* Mobile Filter Toggle */}
+              <div className="lg:hidden mb-4 md:mb-6">
+                <Button
+                  onClick={() => setShowFilters(!showFilters)}
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 text-sm md:text-base py-2 md:py-3"
+                >
+                  <Filter className="w-4 h-4" />
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-[#C4A484] text-white text-xs px-2 py-1 rounded-full">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </Button>
+              </div>
               {/* Results Header */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center space-x-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 mb-4 md:mb-6">
+                <div className="flex flex-col gap-3 md:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4">
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm md:text-base flex-1 sm:flex-none"
                     >
                       <option value="featured">Sort by: Featured</option>
                       <option value="price-low">Price: Low to High</option>
@@ -214,16 +241,16 @@ export default function ProductsPage() {
                         onClick={clearAllFilters}
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-xs md:text-sm"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3 md:w-4 md:h-4" />
                         Clear Filters
                       </Button>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <p className="text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <p className="text-xs md:text-sm text-gray-600">
                       {loading ? "Loading products..." : `Showing ${sortedProducts.length} of ${products.length} products`}
                     </p>
                   </div>
@@ -232,116 +259,81 @@ export default function ProductsPage() {
 
               {/* Products Grid */}
               {loading ? (
-                <div className="text-center py-16">
-                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#C4A484] mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading products...</p>
+                <div className="text-center py-12 md:py-16">
+                  <div className="animate-spin rounded-full h-16 w-16 md:h-32 md:w-32 border-b-2 border-[#C4A484] mx-auto"></div>
+                  <p className="mt-4 text-gray-600 text-sm md:text-base">Loading products...</p>
                 </div>
               ) : sortedProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <Filter className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">No products found</h3>
-                  <p className="text-gray-600 mb-6">
+                <div className="text-center py-12 md:py-16 px-4">
+                  <Filter className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2">No products found</h3>
+                  <p className="text-gray-600 mb-6 text-sm md:text-base">
                     Try adjusting your filters or clearing all filters to see more products.
                   </p>
-                  <Button onClick={clearAllFilters} className="bg-[#C4A484] hover:bg-[#B39474]">
+                  <Button onClick={clearAllFilters} className="bg-[#C4A484] hover:bg-[#B39474] text-sm md:text-base">
                     Clear All Filters
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                   {sortedProducts.map((product) => (
-                    <div
-                      key={product._id}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group hover:shadow-md transition-all duration-300"
-                    >
-                      <div className="relative overflow-hidden h-64">
-                        <img
-                          src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        
-                        {/* Badges */}
-                        <div className="absolute top-4 left-4 flex flex-col space-y-2">
+                    <div key={product._id} className="group">
+                      <Link href={`/products/${product._id}`}>
+                        <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                          <img
+                            src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
                           {product.isNew && (
-                            <span className="bg-green-500 text-white px-2 py-1 text-xs font-bold rounded-full">NEW</span>
+                            <div className="absolute top-4 right-4">
+                              <div className="bg-white px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
+                                New
+                              </div>
+                            </div>
                           )}
                           {product.isOnSale && (
-                            <span className="bg-red-500 text-white px-2 py-1 text-xs font-bold rounded-full">SALE</span>
+                            <div className="absolute top-4 left-4">
+                              <div className="bg-red-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
+                                {product.offerPercentage}% OFF
+                              </div>
+                            </div>
                           )}
                         </div>
-
-                        {/* Action buttons */}
-                        <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100">
-                            <Filter className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <a
-                            href={`/view-details?id=${product._id}`}
-                            className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100"
-                          >
-                            <Filter className="w-4 h-4 text-gray-600" />
-                          </a>
-                        </div>
-                      </div>
-
-                      <div className="p-4">
-                        <div className="mb-2">
-                          <p className="text-sm text-gray-500">{product.category}</p>
-                        </div>
-
-                        <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      </Link>
+                      <div className="mt-4 p-4">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8B7355] transition-colors">
                           {product.name}
                         </h3>
-
-                        {/* Rating */}
-                        <div className="flex items-center mb-3">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Filter
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
+                        <p className="text-gray-600 text-sm mb-3">JEWELS BY LAHARI</p>
+                        <div className="mb-4">
+                          <span className="text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
+                          {product.originalPrice && product.originalPrice > product.price && (
+                            <span className="text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                          )}
                         </div>
-
-                        {/* Price */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xl font-bold text-blue-600">₹{product.price.toFixed(2)}</span>
-                            {product.originalPrice && product.originalPrice > product.price && (
-                              <span className="text-sm text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
-                            )}
-                            {product.isOnSale && product.offerPercentage && (
-                              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                                {product.offerPercentage}% OFF
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
+                        {/* Action Buttons - Horizontal Layout Below Price */}
                         <div className="flex space-x-3">
                           <Button 
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              // Add to cart functionality would go here
-                            }}
+                            className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white"
+                            onClick={() => addItem({
+                              id: product._id,
+                              name: product.name,
+                              price: product.price,
+                              originalPrice: product.originalPrice,
+                              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                              category: product.category,
+                              brand: "JEWELS BY LAHARI"
+                            })}
                           >
                             Add to Cart
                           </Button>
-                          <a
-                            href={`/view-details?id=${product._id}`}
-                            className="flex-1"
-                          >
-                            <Button variant="outline" className="w-full">
-                              View Details
+                          <Link href={`/checkout?product=${product._id}&quantity=1`}>
+                            <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white">
+                              Buy Now
                             </Button>
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     </div>
