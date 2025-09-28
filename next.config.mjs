@@ -4,18 +4,25 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true, // Temporarily ignore TypeScript errors for deployment
+    ignoreBuildErrors: true,
   },
   images: {
-    domains: ['res.cloudinary.com'],
+    domains: ['res.cloudinary.com', 'cloudinary.com'],
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/dzs85rccr/**',
+      },
+    ],
   },
   serverExternalPackages: ['mongoose'],
-  output: 'standalone', // Optimize for Vercel
+  output: 'standalone',
   experimental: {
     serverMinification: true,
   },
-  // Remove env config to avoid issues
 }
 
 export default nextConfig

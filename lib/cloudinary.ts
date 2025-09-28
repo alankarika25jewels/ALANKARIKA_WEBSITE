@@ -25,8 +25,12 @@ export const uploadToCloudinary = async (file: Buffer, folder: string, resourceT
             : ['mp4', 'mov', 'avi', 'mkv'],
           transformation: resourceType === 'image' ? [
             { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto' }
-          ] : undefined
+            { quality: 'auto' },
+            { fetch_format: 'auto' }
+          ] : undefined,
+          secure: true, // Ensure HTTPS URLs
+          use_filename: true,
+          unique_filename: true
         },
         (error, result) => {
           if (error) {
@@ -34,6 +38,7 @@ export const uploadToCloudinary = async (file: Buffer, folder: string, resourceT
             reject(error)
           } else {
             console.log('Cloudinary upload successful:', result?.public_id)
+            console.log('Generated URL:', result?.secure_url)
             resolve(result)
           }
         }
