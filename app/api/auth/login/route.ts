@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import connectDB from '@/lib/mongodb'
+import User from '@/lib/models/User'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,37 +17,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Simple hardcoded admin check for testing
-    if (email === 'admin@alankarika.com' && password === 'admin123') {
-      console.log('Login successful for:', email)
-      
-      const userData = {
-        _id: 'admin123',
-        email: 'admin@alankarika.com',
-        firstName: 'Admin',
-        lastName: 'User',
-        fullName: 'Admin User',
-        phone: '',
-        role: 'admin',
-        address: {},
-        preferences: {},
-        createdAt: new Date().toISOString()
-      }
+    await connectDB()
 
+    // Check if user exists
+    const user = await User.findOne({ email })
+    if (!user) {
+      console.log('User not found for:', email)
       return NextResponse.json(
-        { 
-          success: true,
-          message: 'Login successful',
-          data: userData
-        },
-        { status: 200 }
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
       )
     }
 
-    console.log('Invalid credentials for:', email)
+    // Check password
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+      console.log('Invalid password for:', email)
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
+
+    console.log('Login successful for:', email)
+    
+    // Return user data (without password)
+    const userData = {
+      _id: user._id.toString(),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      phone: user.phone || '',
+      role: user.role,
+      address: user.address || {},
+      preferences: user.preferences || {},
+      createdAt: user.createdAt
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Invalid email or password' },
-      { status: 401 }
+      { 
+        success: true,
+        message: 'Login successful',
+        data: userData
+      },
+      { status: 200 }
     )
 
   } catch (error) {
