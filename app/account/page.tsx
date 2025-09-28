@@ -19,18 +19,22 @@ import {
   CheckCircle,
   Clock,
   Truck,
-  LogOut
+  LogOut,
+  Eye
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
+import { useOrders } from "@/hooks/useOrders"
+import { Order } from "@/hooks/useOrders"
 
 export default function AccountPage() {
   const router = useRouter()
+  const { getUserOrders, loading: ordersLoading } = useOrders()
   const [activeTab, setActiveTab] = useState("profile")
   const [isEditing, setIsEditing] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
   const [profileData, setProfileData] = useState({
@@ -52,25 +56,27 @@ export default function AccountPage() {
           credentials: 'include'
         })
         if (response.ok) {
-          const userData = await response.json()
-          setIsAuthenticated(true)
-          setUser(userData)
-          setProfileData({
-            firstName: userData.firstName || "",
-            lastName: userData.lastName || "",
-            email: userData.email || "",
-            phone: userData.phone || "",
-            address: userData.address || "",
-            city: userData.city || "",
-            state: userData.state || "",
-            zipCode: userData.zipCode || ""
-          })
-          
-          // Fetch user orders
-          await fetchUserOrders(userData._id)
+          const data = await response.json()
+          if (data.success) {
+            setIsAuthenticated(true)
+            setUser(data.data)
+            setProfileData({
+              firstName: data.data.firstName || "",
+              lastName: data.data.lastName || "",
+              email: data.data.email || "",
+              phone: data.data.phone || "",
+              address: data.data.address?.street || "",
+              city: data.data.address?.city || "",
+              state: data.data.address?.state || "",
+              zipCode: data.data.address?.zipCode || ""
+            })
+            
+            // Fetch user orders
+            await fetchUserOrders(data.data._id)
+          }
         } else {
           // Redirect to login if not authenticated
-          router.push('/account')
+          router.push('/checkout')
           toast({
             title: "Authentication Required",
             description: "Please log in to view your account",
@@ -78,7 +84,7 @@ export default function AccountPage() {
           })
         }
       } catch (error) {
-        router.push('/account')
+        router.push('/checkout')
         toast({
           title: "Authentication Error",
           description: "Please log in to continue",
@@ -95,15 +101,15 @@ export default function AccountPage() {
   // Fetch user orders
   const fetchUserOrders = async (userId: string) => {
     try {
-      const response = await fetch(`/api/orders?userId=${userId}`, {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setOrders(data.orders || [])
-      }
+      const userOrders = await getUserOrders(userId)
+      setOrders(userOrders)
     } catch (error) {
       console.error('Failed to fetch orders:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load your orders",
+        variant: "destructive",
+      })
     }
   }
 
@@ -215,26 +221,38 @@ export default function AccountPage() {
 
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Delivered":
+    switch (status.toLowerCase()) {
+      case "delivered":
         return "bg-green-100 text-green-800"
-      case "Shipped":
+      case "shipped":
         return "bg-blue-100 text-blue-800"
-      case "Processing":
+      case "processing":
         return "bg-yellow-100 text-yellow-800"
+      case "confirmed":
+        return "bg-purple-100 text-purple-800"
+      case "pending":
+        return "bg-gray-100 text-gray-800"
+      case "cancelled":
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Delivered":
+    switch (status.toLowerCase()) {
+      case "delivered":
         return <CheckCircle className="w-4 h-4" />
-      case "Shipped":
+      case "shipped":
         return <Truck className="w-4 h-4" />
-      case "Processing":
+      case "processing":
         return <Clock className="w-4 h-4" />
+      case "confirmed":
+        return <CheckCircle className="w-4 h-4" />
+      case "pending":
+        return <Clock className="w-4 h-4" />
+      case "cancelled":
+        return <Package className="w-4 h-4" />
       default:
         return <Package className="w-4 h-4" />
     }
@@ -401,40 +419,84 @@ export default function AccountPage() {
                 <CardDescription>Track your orders and view order details</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {orders.map((order) => (
-                    <div key={order.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Order {order.id}</h3>
-                          <p className="text-sm text-gray-500">Placed on {order.date}</p>
+                {ordersLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8B7355] mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading your orders...</p>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+                    <p className="text-gray-600 mb-4">Start shopping to see your orders here</p>
+                    <Button 
+                      onClick={() => router.push('/shop')}
+                      className="bg-[#8B7355] hover:bg-[#D4AF37] text-white"
+                    >
+                      Start Shopping
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div key={order._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">Order #{order.orderNumber}</h3>
+                            <p className="text-sm text-gray-500">
+                              Placed on {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <Badge className={getStatusColor(order.orderStatus)}>
+                            <div className="flex items-center space-x-1">
+                              {getStatusIcon(order.orderStatus)}
+                              <span className="capitalize">{order.orderStatus}</span>
+                            </div>
+                          </Badge>
                         </div>
-                        <Badge className={getStatusColor(order.status)}>
-                          <div className="flex items-center space-x-1">
-                            {getStatusIcon(order.status)}
-                            <span>{order.status}</span>
+                        
+                        <div className="space-y-2">
+                          {order.items.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center space-x-3">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name}
+                                  className="w-8 h-8 rounded object-cover"
+                                />
+                                <span>{item.name} × {item.quantity}</span>
+                              </div>
+                              <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="border-t pt-3 mt-3 flex justify-between items-center">
+                          <div>
+                            <span className="font-semibold">Total: ₹{order.total.toFixed(2)}</span>
+                            <p className="text-xs text-gray-500 capitalize">
+                              Payment: {order.paymentMethod} ({order.paymentStatus})
+                            </p>
                           </div>
-                        </Badge>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              // You can implement order details modal here
+                              toast({
+                                title: "Order Details",
+                                description: `Order #${order.orderNumber} details`,
+                              })
+                            }}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                        </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="flex justify-between text-sm">
-                            <span>{item.name} × {item.quantity}</span>
-                            <span>₹{item.price.toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="border-t pt-3 mt-3 flex justify-between items-center">
-                        <span className="font-semibold">Total: ₹{order.total.toFixed(2)}</span>
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

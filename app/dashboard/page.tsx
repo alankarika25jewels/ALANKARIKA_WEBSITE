@@ -31,17 +31,36 @@ export default function DashboardPage() {
   const [loginError, setLoginError] = useState('')
 
   // Login function
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError('')
     
-    if (username === 'admin_01' && password === 'admin@123') {
-      setIsAuthenticated(true)
-      // Store authentication in localStorage for persistence
-      localStorage.setItem('dashboardAuth', 'true')
-    } else {
-      setLoginError('Invalid username or password')
-      setPassword('') // Clear password on failed attempt
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        // Store user data in localStorage for persistence
+        localStorage.setItem('dashboardUser', JSON.stringify(data.data))
+        localStorage.setItem('dashboardAuth', 'true')
+      } else {
+        setLoginError(data.error || 'Login failed')
+        setPassword('') // Clear password on failed attempt
+      }
+    } catch (error) {
+      setLoginError('Login failed. Please try again.')
+      setPassword('')
     }
   }
 
@@ -57,6 +76,7 @@ export default function DashboardPage() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     localStorage.removeItem('dashboardAuth')
+    localStorage.removeItem('dashboardUser')
     setUsername('')
     setPassword('')
   }
@@ -83,18 +103,18 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                    Username
+                    Email
                   </label>
                   <div className="mt-1 relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="username"
-                      type="text"
+                      type="email"
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="pl-10"
-                      placeholder="Enter username"
+                      placeholder="Enter email"
                     />
                   </div>
                 </div>
@@ -135,8 +155,8 @@ export default function DashboardPage() {
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
                 Demo Credentials:<br />
-                Username: <span className="font-mono bg-gray-100 px-1 rounded">admin_01</span><br />
-                Password: <span className="font-mono bg-gray-100 px-1 rounded">admin@123</span>
+                Email: <span className="font-mono bg-gray-100 px-1 rounded">admin@alankarika.com</span><br />
+                Password: <span className="font-mono bg-gray-100 px-1 rounded">admin123</span>
               </p>
             </div>
           </div>

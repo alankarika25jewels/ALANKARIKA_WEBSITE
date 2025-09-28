@@ -4,12 +4,13 @@ import Product from '@/lib/models/Product'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
     
-    const product = await Product.findById(params.id)
+    const { id } = await params
+    const product = await Product.findById(id)
     
     if (!product) {
       return NextResponse.json(
@@ -34,10 +35,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
+    
+    const { id } = await params
     
     const formData = await request.formData()
     
@@ -109,7 +112,7 @@ export async function PUT(
     }
     
     // Get existing product to merge with new data
-    const existingProduct = await Product.findById(params.id)
+    const existingProduct = await Product.findById(id)
     if (!existingProduct) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
@@ -122,7 +125,7 @@ export async function PUT(
     const existingVideos = existingProduct.videos.filter((vid: any) => !videosToDelete.includes(vid.publicId))
     
     const updatedProduct = await Product.findByIdAndUpdate(
-      params.id,
+      id,
       {
         name,
         description,
@@ -155,12 +158,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
     
-    const product = await Product.findById(params.id)
+    const { id } = await params
+    const product = await Product.findById(id)
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
@@ -180,7 +184,7 @@ export async function DELETE(
     }
     
     // Delete the product from MongoDB
-    await Product.findByIdAndDelete(params.id)
+    await Product.findByIdAndDelete(id)
     
     return NextResponse.json({
       success: true,

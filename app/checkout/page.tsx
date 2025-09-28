@@ -145,9 +145,9 @@ export default function CheckoutPage() {
         setShowAuthModal(false)
         setFormData(prev => ({
           ...prev,
-          firstName: data.user.firstName || '',
-          lastName: data.user.lastName || '',
-          email: data.user.email || ''
+          firstName: data.data.firstName || '',
+          lastName: data.data.lastName || '',
+          email: data.data.email || ''
         }))
         toast({
           title: isLogin ? "Login Successful" : "Registration Successful",
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
       } else {
         toast({
           title: "Authentication Failed",
-          description: data.message || "Please try again",
+          description: data.error || data.message || "Please try again",
           variant: "destructive",
         })
       }

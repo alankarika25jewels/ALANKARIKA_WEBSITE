@@ -89,7 +89,8 @@ const ProductSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  suppressReservedKeysWarning: true
 })
 
 // Calculate offer percentage if original price is provided

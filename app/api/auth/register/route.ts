@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { connectToDatabase } from '@/lib/mongodb-native'
-import { ObjectId } from 'mongodb'
+import connectDB from '@/lib/mongodb'
+import User from '@/lib/models/User'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, firstName, lastName } = await request.json()
+    console.log('Registration API called')
+    const { email, password, firstName, lastName, phone } = await request.json()
+    console.log('Registration attempt for:', email)
 
     // Validate input
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
-        { message: 'All fields are required' },
+        { success: false, error: 'All required fields must be provided' },
         { status: 400 }
       )
     }
@@ -19,7 +21,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { message: 'Invalid email format' },
+        { success: false, error: 'Invalid email format' },
         { status: 400 }
       )
     }
@@ -27,19 +29,18 @@ export async function POST(request: NextRequest) {
     // Validate password strength
     if (password.length < 6) {
       return NextResponse.json(
-        { message: 'Password must be at least 6 characters long' },
+        { success: false, error: 'Password must be at least 6 characters long' },
         { status: 400 }
       )
     }
 
-    // Connect to database
-    const { db } = await connectToDatabase()
+    await connectDB()
 
     // Check if user already exists
-    const existingUser = await db.collection('users').findOne({ email })
+    const existingUser = await User.findOne({ email })
     if (existingUser) {
       return NextResponse.json(
-        { message: 'User with this email already exists' },
+        { success: false, error: 'User with this email already exists' },
         { status: 409 }
       )
     }
@@ -49,39 +50,34 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, saltRounds)
 
     // Create user
-    const userData = {
+    const user = new User({
       email,
       password: hashedPassword,
       firstName,
       lastName,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      role: 'customer'
-    }
+      phone: phone || undefined
+    })
 
-    const result = await db.collection('users').insertOne(userData)
-
-    if (!result.insertedId) {
-      return NextResponse.json(
-        { message: 'Failed to create user' },
-        { status: 500 }
-      )
-    }
+    await user.save()
 
     // Return user data (without password)
-    const newUser = {
-      _id: result.insertedId.toString(),
-      email,
-      firstName,
-      lastName,
-      role: 'customer',
-      createdAt: userData.createdAt
+    const userResponse = {
+      _id: user._id.toString(),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      phone: user.phone,
+      role: user.role,
+      createdAt: user.createdAt
     }
 
+    console.log('Registration successful for:', email)
     return NextResponse.json(
       { 
+        success: true,
         message: 'User created successfully',
-        user: newUser
+        data: userResponse
       },
       { status: 201 }
     )
@@ -89,7 +85,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Registration error:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

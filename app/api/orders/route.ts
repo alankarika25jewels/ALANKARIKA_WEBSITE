@@ -1,64 +1,144 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
-import { connectToDatabase } from '@/lib/mongodb-native'
-import { ObjectId } from 'mongodb'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+import connectDB from '@/lib/mongodb'
+import Order from '@/lib/models/Order'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get token from cookies
-    const token = request.cookies.get('auth-token')?.value
-
-    if (!token) {
-      return NextResponse.json(
-        { message: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Verify token
-    const decoded: any = jwt.verify(token, JWT_SECRET)
-    const userId = decoded.userId
-
-    // Get userId from query params (for admin purposes)
+    await connectDB()
+    
     const url = new URL(request.url)
-    const queryUserId = url.searchParams.get('userId')
-
-    // Use query userId if provided and user is admin, otherwise use token userId
-    const targetUserId = queryUserId || userId
-
-    // Connect to database
-    const { db } = await connectToDatabase()
-
-    // Fetch orders for the user
-    const orders = await db.collection('orders')
-      .find({ userId: targetUserId })
+    const userId = url.searchParams.get('userId')
+    const status = url.searchParams.get('status')
+    const search = url.searchParams.get('search')
+    
+    // Build query
+    let query: any = {}
+    
+    if (userId) {
+      query.userId = userId
+    }
+    
+    if (status && status !== 'all') {
+      query.orderStatus = status
+    }
+    
+    if (search) {
+      query.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { 'customerDetails.firstName': { $regex: search, $options: 'i' } },
+        { 'customerDetails.lastName': { $regex: search, $options: 'i' } },
+        { 'customerDetails.email': { $regex: search, $options: 'i' } }
+      ]
+    }
+    
+    const orders = await Order.find(query)
       .sort({ createdAt: -1 })
-      .toArray()
-
-    // Format orders for response
-    const formattedOrders = orders.map(order => ({
-      _id: order._id.toString(),
-      orderNumber: order.orderNumber,
-      status: order.status,
-      total: order.total,
-      items: order.items,
-      shippingAddress: order.shippingAddress,
-      paymentMethod: order.paymentMethod,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt
-    }))
-
+      .limit(100) // Limit to prevent performance issues
+    
     return NextResponse.json({
       success: true,
-      orders: formattedOrders
-    }, { status: 200 })
-
+      data: orders,
+      count: orders.length
+    })
+    
   } catch (error) {
-    console.error('Orders fetch error:', error)
+    console.error('Error fetching orders:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { success: false, error: 'Failed to fetch orders' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB()
+    
+    const orderData = await request.json()
+    
+    // Validate required fields
+    const requiredFields = [
+      'customerDetails',
+      'items',
+      'subtotal',
+      'tax',
+      'total',
+      'paymentMethod'
+    ]
+    
+    for (const field of requiredFields) {
+      if (!orderData[field]) {
+        return NextResponse.json(
+          { success: false, error: `Missing required field: ${field}` },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // Validate customer details
+    const customerFields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'address',
+      'city',
+      'state',
+      'zipCode',
+      'country'
+    ]
+    
+    for (const field of customerFields) {
+      if (!orderData.customerDetails[field]) {
+        return NextResponse.json(
+          { success: false, error: `Missing customer field: ${field}` },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // Validate items
+    if (!Array.isArray(orderData.items) || orderData.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Order must contain at least one item' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate each item
+    for (const item of orderData.items) {
+      const itemFields = ['productId', 'name', 'price', 'quantity', 'image', 'category']
+      for (const field of itemFields) {
+        if (!item[field]) {
+          return NextResponse.json(
+            { success: false, error: `Missing item field: ${field}` },
+            { status: 400 }
+          )
+        }
+      }
+    }
+    
+    // Create order
+    const order = new Order({
+      ...orderData,
+      userId: orderData.userId || null, // Optional user ID for guest orders
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
+      shippingStatus: 'pending'
+    })
+    
+    await order.save()
+    
+    return NextResponse.json({
+      success: true,
+      data: order,
+      message: 'Order created successfully'
+    }, { status: 201 })
+    
+  } catch (error) {
+    console.error('Error creating order:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to create order' },
       { status: 500 }
     )
   }

@@ -10,65 +10,148 @@ export async function GET(
     await connectDB()
     
     const order = await Order.findById(params.id)
-      .populate('items.productId', 'name images category')
     
     if (!order) {
       return NextResponse.json(
-        { error: 'Order not found' },
+        { success: false, error: 'Order not found' },
         { status: 404 }
       )
     }
-
-    return NextResponse.json(order)
+    
+    return NextResponse.json({
+      success: true,
+      data: order
+    })
+    
   } catch (error) {
     console.error('Error fetching order:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch order' },
+      { success: false, error: 'Failed to fetch order' },
       { status: 500 }
     )
   }
 }
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     await connectDB()
     
-    const body = await request.json()
-    const { orderStatus, paymentStatus, shippingStatus, trackingNumber, notes } = body
-
-    const updateData: any = {}
+    const updateData = await request.json()
     
-    if (orderStatus) updateData.orderStatus = orderStatus
-    if (paymentStatus) updateData.paymentStatus = paymentStatus
-    if (shippingStatus) updateData.shippingStatus = shippingStatus
-    if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber
-    if (notes !== undefined) updateData.notes = notes
-
-    const order = await Order.findByIdAndUpdate(
+    // Validate allowed fields for update
+    const allowedFields = [
+      'orderStatus',
+      'paymentStatus',
+      'shippingStatus',
+      'trackingNumber',
+      'notes'
+    ]
+    
+    const updateFields: any = {}
+    for (const field of allowedFields) {
+      if (updateData[field] !== undefined) {
+        updateFields[field] = updateData[field]
+      }
+    }
+    
+    // Validate order status
+    if (updateFields.orderStatus) {
+      const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
+      if (!validStatuses.includes(updateFields.orderStatus)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid order status' },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // Validate payment status
+    if (updateFields.paymentStatus) {
+      const validStatuses = ['pending', 'completed', 'failed', 'refunded']
+      if (!validStatuses.includes(updateFields.paymentStatus)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid payment status' },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // Validate shipping status
+    if (updateFields.shippingStatus) {
+      const validStatuses = ['pending', 'shipped', 'delivered']
+      if (!validStatuses.includes(updateFields.shippingStatus)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid shipping status' },
+          { status: 400 }
+        )
+      }
+    }
+    
+    const updatedOrder = await Order.findByIdAndUpdate(
       params.id,
-      updateData,
+      updateFields,
       { new: true, runValidators: true }
     )
-
-    if (!order) {
+    
+    if (!updatedOrder) {
       return NextResponse.json(
-        { error: 'Order not found' },
+        { success: false, error: 'Order not found' },
         { status: 404 }
       )
     }
-
+    
     return NextResponse.json({
       success: true,
-      order,
+      data: updatedOrder,
       message: 'Order updated successfully'
     })
+    
   } catch (error) {
     console.error('Error updating order:', error)
     return NextResponse.json(
-      { error: 'Failed to update order' },
+      { success: false, error: 'Failed to update order' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB()
+    
+    const order = await Order.findById(params.id)
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Only allow deletion of pending orders
+    if (order.orderStatus !== 'pending') {
+      return NextResponse.json(
+        { success: false, error: 'Only pending orders can be deleted' },
+        { status: 400 }
+      )
+    }
+    
+    await Order.findByIdAndDelete(params.id)
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Order deleted successfully'
+    })
+    
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete order' },
       { status: 500 }
     )
   }

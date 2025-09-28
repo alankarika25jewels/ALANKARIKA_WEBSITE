@@ -53,10 +53,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         if (response.ok) {
           const data = await response.json()
           onLoginSuccess({
-            name: data.user.firstName ? `${data.user.firstName} ${data.user.lastName}`.trim() : data.user.email.split('@')[0],
-            email: data.user.email,
-            firstName: data.user.firstName || '',
-            lastName: data.user.lastName || ''
+            name: data.data.firstName ? `${data.data.firstName} ${data.data.lastName}`.trim() : data.data.email.split('@')[0],
+            email: data.data.email,
+            firstName: data.data.firstName || '',
+            lastName: data.data.lastName || ''
           })
           onClose()
           toast({
@@ -67,7 +67,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
           const error = await response.json()
           toast({
             title: "Login Failed",
-            description: error.message || "Invalid email or password",
+            description: error.error || error.message || "Invalid email or password",
             variant: "destructive"
           })
         }
@@ -99,10 +99,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         if (response.ok) {
           const data = await response.json()
           onLoginSuccess({
-            name: `${data.user.firstName} ${data.user.lastName}`.trim(),
-            email: data.user.email,
-            firstName: data.user.firstName,
-            lastName: data.user.lastName
+            name: `${data.data.firstName} ${data.data.lastName}`.trim(),
+            email: data.data.email,
+            firstName: data.data.firstName,
+            lastName: data.data.lastName
           })
           onClose()
           toast({
@@ -113,7 +113,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
           const error = await response.json()
           toast({
             title: "Registration Failed",
-            description: error.message || "Failed to create account",
+            description: error.error || error.message || "Failed to create account",
             variant: "destructive"
           })
         }

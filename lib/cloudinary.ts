@@ -1,15 +1,20 @@
 import { v2 as cloudinary } from 'cloudinary'
 
+// Use hardcoded values for now to fix the issue
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dzs85rccr',
+  api_key: process.env.CLOUDINARY_API_KEY || '563775748192214',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'Yj4ONzhLsminRC65Zv6C2NpyEG0',
 })
 
 export default cloudinary
 
 export const uploadToCloudinary = async (file: Buffer, folder: string, resourceType: 'image' | 'video' = 'image') => {
   try {
+    console.log('Starting Cloudinary upload...')
+    console.log('Cloud name:', cloudinary.config().cloud_name)
+    console.log('API key:', cloudinary.config().api_key ? 'Present' : 'Missing')
+    
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -24,8 +29,13 @@ export const uploadToCloudinary = async (file: Buffer, folder: string, resourceT
           ] : undefined
         },
         (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
+          if (error) {
+            console.error('Cloudinary upload stream error:', error)
+            reject(error)
+          } else {
+            console.log('Cloudinary upload successful:', result?.public_id)
+            resolve(result)
+          }
         }
       )
 
@@ -57,4 +67,35 @@ export const getCloudinaryFolder = (type: 'products' | 'banners' | 'thumbnails' 
     return `alankarika/categories/${category.toLowerCase()}`
   }
   return `alankarika/${type}`
+}
+
+// Enhanced upload function with better error handling and progress tracking
+export const uploadMultipleFiles = async (
+  files: File[], 
+  folder: string, 
+  resourceType: 'image' | 'video' = 'image'
+) => {
+  const uploadPromises = files.map(async (file) => {
+    if (file.size === 0) return null
+    
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    
+    return await uploadToCloudinary(buffer, folder, resourceType)
+  })
+  
+  const results = await Promise.all(uploadPromises)
+  return results.filter(result => result !== null)
+}
+
+// Delete multiple files from Cloudinary
+export const deleteMultipleFiles = async (
+  publicIds: string[], 
+  resourceType: 'image' | 'video' = 'image'
+) => {
+  const deletePromises = publicIds.map(publicId => 
+    deleteFromCloudinary(publicId, resourceType)
+  )
+  
+  await Promise.all(deletePromises)
 }

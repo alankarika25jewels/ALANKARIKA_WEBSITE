@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { User, LogOut } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { User } from "lucide-react"
 import LoginModal from "./login-modal"
 
 interface User {
@@ -15,56 +14,17 @@ interface User {
 export default function LoginIcon() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // Check if user is logged in on component mount
-  useEffect(() => {
-    checkAuthStatus()
-  }, [])
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include'
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setUser({
-          name: data.firstName ? `${data.firstName} ${data.lastName}`.trim() : data.email.split('@')[0],
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName
-        })
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleLoginSuccess = (userData: User) => {
     setUser(userData)
     setIsLoginModalOpen(false)
   }
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
-      setUser(null)
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
-    )
+  const handleLogout = () => {
+    setUser(null)
+    // Clear any stored data
+    localStorage.removeItem('dashboardAuth')
+    localStorage.removeItem('dashboardUser')
   }
 
   return (
@@ -91,7 +51,7 @@ export default function LoginIcon() {
                   onClick={handleLogout}
                   className="w-full flex items-center space-x-2 px-2 md:px-3 py-2 text-xs md:text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 >
-                  <LogOut className="w-3 h-3 md:w-4 md:h-4" />
+                  <User className="w-3 h-3 md:w-4 md:h-4" />
                   <span>Logout</span>
                 </button>
               </div>
@@ -101,7 +61,7 @@ export default function LoginIcon() {
           // User is not logged in - show login button
           <button
             onClick={() => setIsLoginModalOpen(true)}
-            className="flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-1 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white lg:text-white lg:bg-white/10 lg:hover:bg-white/20 lg:text-white"
+            className="flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-1 md:py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white lg:bg-white/10 lg:hover:bg-white/20"
           >
             <User className="w-4 h-4 md:w-5 md:h-5" />
             <span className="text-xs md:text-sm font-medium hidden sm:block">Login</span>

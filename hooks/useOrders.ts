@@ -24,6 +24,7 @@ export interface CustomerDetails {
 export interface Order {
   _id: string
   orderNumber: string
+  userId?: string
   customerDetails: CustomerDetails
   items: OrderItem[]
   subtotal: number
@@ -40,12 +41,14 @@ export interface Order {
 }
 
 export interface CreateOrderData {
+  userId?: string
   customerDetails: CustomerDetails
   items: OrderItem[]
   subtotal: number
   tax: number
   total: number
   paymentMethod: 'card' | 'upi' | 'cod'
+  notes?: string
 }
 
 export interface UpdateOrderData {
@@ -103,7 +106,14 @@ export const useOrders = () => {
 
       const data = await response.json()
       console.log('useOrders: API success response:', data)
-      return data.order
+      
+      // Add the new order to the local state
+      if (data.success && data.data) {
+        setOrders(prev => [data.data, ...prev])
+        return data.data
+      }
+      
+      throw new Error('Invalid response format')
     } catch (err) {
       console.error('useOrders: Error in createOrder:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to create order'
@@ -119,6 +129,7 @@ export const useOrders = () => {
     limit?: number
     status?: string
     search?: string
+    userId?: string
   }) => {
     try {
       setLoading(true)
@@ -129,6 +140,7 @@ export const useOrders = () => {
       if (params?.limit) searchParams.append('limit', params.limit.toString())
       if (params?.status) searchParams.append('status', params.status)
       if (params?.search) searchParams.append('search', params.search)
+      if (params?.userId) searchParams.append('userId', params.userId)
 
       const response = await fetch(`/api/orders?${searchParams.toString()}`)
       
@@ -137,9 +149,21 @@ export const useOrders = () => {
         throw new Error(errorData.error || 'Failed to fetch orders')
       }
 
-      const data: OrdersResponse = await response.json()
-      setOrders(data.orders)
-      setPagination(data.pagination)
+      const data = await response.json()
+      
+      if (data.success) {
+        setOrders(data.data)
+        // Update pagination if provided
+        if (data.count) {
+          setPagination(prev => ({
+            ...prev,
+            total: data.count,
+            pages: Math.ceil(data.count / prev.limit)
+          }))
+        }
+      } else {
+        throw new Error(data.error || 'Failed to fetch orders')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orders'
       setError(errorMessage)
@@ -154,7 +178,7 @@ export const useOrders = () => {
       setError(null)
       
       const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -168,14 +192,17 @@ export const useOrders = () => {
 
       const data = await response.json()
       
-      // Update the order in the local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order._id === orderId ? data.order : order
+      if (data.success) {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === orderId ? data.data : order
+          )
         )
-      )
+        return data.data
+      }
       
-      return data.order
+      throw new Error(data.error || 'Failed to update order')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update order'
       setError(errorMessage)
@@ -197,12 +224,47 @@ export const useOrders = () => {
         throw new Error(errorData.error || 'Failed to fetch order')
       }
 
-      const order = await response.json()
-      return order
+      const data = await response.json()
+      
+      if (data.success) {
+        return data.data
+      }
+      
+      throw new Error(data.error || 'Failed to fetch order')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order'
       setError(errorMessage)
       throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get user orders
+  const getUserOrders = async (userId: string): Promise<Order[]> => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch(`/api/orders?userId=${userId}`)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch user orders')
+      }
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setOrders(data.data)
+        return data.data
+      }
+      
+      throw new Error(data.error || 'Failed to fetch user orders')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user orders'
+      setError(errorMessage)
+      return []
     } finally {
       setLoading(false)
     }
@@ -222,5 +284,6 @@ export const useOrders = () => {
     fetchOrders,
     updateOrder,
     fetchOrder,
+    getUserOrders,
   }
 }
