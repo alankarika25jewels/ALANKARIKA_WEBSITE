@@ -31,7 +31,12 @@ export async function GET() {
       )
     }
     
-    const products = await Product.find({}).sort({ createdAt: -1 })
+    // Optimize query: only fetch active products, limit fields, use lean for faster queries
+    const products = await Product.find({ isActive: { $ne: false } })
+      .select('name description price originalPrice offerPercentage isOnSale isNew category images quantity rating reviews')
+      .sort({ createdAt: -1 })
+      .limit(50) // Limit to 50 products for better performance
+      .lean() // Use lean() for faster queries (returns plain JS objects)
     
     return NextResponse.json({
       success: true,
@@ -40,6 +45,7 @@ export async function GET() {
     }, {
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300', // Cache for 1 minute, serve stale for 5 minutes
       }
     })
   } catch (error: any) {

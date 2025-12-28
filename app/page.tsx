@@ -29,22 +29,7 @@ export default function Home() {
   const newArrivals = products.slice(0, 12)
   const latestGems = products.slice(0, 8)
   
-  // Show loading state if products are still loading
-  if (loading && products.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Navbar />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#C4A484] mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading products...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
+  // Don't block the entire page - show skeleton loaders instead
 
   // Show error state if there's an error
   if (error && products.length === 0) {
@@ -139,6 +124,16 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Navbar - Always visible */}
       <Navbar />
+      
+      {/* Show subtle loading indicator at top if loading */}
+      {loading && products.length === 0 && (
+        <div className="fixed top-20 left-0 right-0 z-50 bg-blue-50 border-b border-blue-200">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent mr-2"></div>
+            <p className="text-sm text-blue-600">Loading products...</p>
+          </div>
+        </div>
+      )}
       
       {/* Top Section - Increased height */}
       <section className="h-16 md:h-20 bg-gradient-to-r from-[#FFFFFF] via-[#F5EEDC] to-[#8B7355]">

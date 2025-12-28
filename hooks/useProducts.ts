@@ -45,13 +45,18 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch all products
+  // Fetch all products with optimized request
   const fetchProducts = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const response = await fetch('/api/products')
+      // Fetch with cache headers for better performance
+      const response = await fetch('/api/products', {
+        headers: {
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
+        }
+      })
       const data = await response.json()
       
       if (data.success) {
