@@ -5,7 +5,31 @@ import { uploadToCloudinary, getCloudinaryFolder } from '@/lib/cloudinary'
 
 export async function GET() {
   try {
-    await connectDB()
+    // Connect to database with timeout
+    try {
+      await Promise.race([
+        connectDB(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database connection timeout')), 10000)
+        )
+      ])
+    } catch (dbError) {
+      console.error('Database connection error:', dbError)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database connection failed. Please check your MongoDB connection string.',
+          data: [],
+          count: 0
+        },
+        { 
+          status: 503,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      )
+    }
     
     const products = await Product.find({}).sort({ createdAt: -1 })
     
@@ -13,19 +37,51 @@ export async function GET() {
       success: true,
       data: products,
       count: products.length
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching products:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch products' },
-      { status: 500 }
+      { 
+        success: false, 
+        error: error?.message || 'Failed to fetch products',
+        data: [],
+        count: 0
+      },
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
+    // Connect to database with timeout
+    try {
+      await Promise.race([
+        connectDB(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database connection timeout')), 10000)
+        )
+      ])
+    } catch (dbError) {
+      console.error('Database connection error:', dbError)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database connection failed. Please check your MongoDB connection string.',
+          details: process.env.NODE_ENV === 'development' ? String(dbError) : undefined
+        },
+        { status: 503 }
+      )
+    }
     
     const formData = await request.formData()
     
@@ -136,11 +192,26 @@ export async function POST(request: NextRequest) {
       message: 'Product created successfully'
     }, { status: 201 })
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating product:', error)
+    
+    // Always return JSON, never HTML
+    const errorMessage = error?.message || 'Failed to create product'
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to create product' },
-      { status: 500 }
+      { 
+        success: false, 
+        error: errorMessage,
+        details: isDevelopment ? String(error) : undefined,
+        stack: isDevelopment ? error?.stack : undefined
+      },
+      { 
+        status: error?.status || 500,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     )
   }
 }

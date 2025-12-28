@@ -68,28 +68,40 @@ export default function Home() {
     )
   }
   
+  // Calculate max slides - only allow navigation if there are more items than visible
+  // Assuming ~3-4 items visible per screen width
+  const maxNewArrivalsSlides = Math.max(0, newArrivals.length - 4)
+  const maxGemsSlides = Math.max(0, latestGems.length - 4)
+  const maxFeaturedSlides = Math.max(0, featuredProducts.length - 3)
+  
   const handlePrevSlide = () => {
-    setCurrentSlide((prev: number) => prev === 0 ? newArrivals.length - 1 : prev - 1)
+    if (newArrivals.length <= 4) return // Don't slide if all items are visible
+    setCurrentSlide((prev: number) => prev === 0 ? maxNewArrivalsSlides : prev - 1)
   }
   
   const handleNextSlide = () => {
-    setCurrentSlide((prev: number) => prev === newArrivals.length - 1 ? 0 : prev + 1)
+    if (newArrivals.length <= 4) return // Don't slide if all items are visible
+    setCurrentSlide((prev: number) => prev >= maxNewArrivalsSlides ? 0 : prev + 1)
   }
   
   const handlePrevGemsSlide = () => {
-    setCurrentGemsSlide((prev: number) => prev === 0 ? latestGems.length - 1 : prev - 1)
+    if (latestGems.length <= 4) return // Don't slide if all items are visible
+    setCurrentGemsSlide((prev: number) => prev === 0 ? maxGemsSlides : prev - 1)
   }
   
   const handleNextGemsSlide = () => {
-    setCurrentGemsSlide((prev: number) => prev === latestGems.length - 1 ? 0 : prev + 1)
+    if (latestGems.length <= 4) return // Don't slide if all items are visible
+    setCurrentGemsSlide((prev: number) => prev >= maxGemsSlides ? 0 : prev + 1)
   }
   
   const handlePrevFeaturedSlide = () => {
-    setCurrentFeaturedSlide((prev: number) => prev === 0 ? featuredProducts.length - 1 : prev - 1)
+    if (featuredProducts.length <= 3) return // Don't slide if all items are visible
+    setCurrentFeaturedSlide((prev: number) => prev === 0 ? maxFeaturedSlides : prev - 1)
   }
   
   const handleNextFeaturedSlide = () => {
-    setCurrentFeaturedSlide((prev: number) => prev === featuredProducts.length - 1 ? 0 : prev + 1)
+    if (featuredProducts.length <= 3) return // Don't slide if all items are visible
+    setCurrentFeaturedSlide((prev: number) => prev >= maxFeaturedSlides ? 0 : prev + 1)
   }
 
   const categories = [
@@ -246,8 +258,8 @@ export default function Home() {
                   <p className="text-gray-500">No products available</p>
                 </div>
               ) : (
-                [...newArrivals, ...newArrivals, ...newArrivals].map((product, index) => (
-                   <div key={`${product._id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-72 md:w-80" style={{ animationDelay: `${0.8 + (index % newArrivals.length) * 0.1}s` }}>
+                newArrivals.map((product, index) => (
+                   <div key={product._id} className="group animate-fade-in-up flex-shrink-0 w-72 md:w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                      <Link href={`/view-details?id=${product._id}`}>
                        <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
                          <Image
@@ -315,27 +327,29 @@ export default function Home() {
               )}
             </div>
             
-            {/* Navigation Arrows */}
-            <div className="absolute inset-0 pointer-events-none">
-              <button 
-                onClick={() => {
-                  console.log('Left arrow clicked, current slide:', currentSlide)
-                  handlePrevSlide()
-                }}
-                 className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
-              </button>
-              <button 
-                onClick={() => {
-                  console.log('Right arrow clicked, current slide:', currentSlide)
-                  handleNextSlide()
-                }}
-                 className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
-              </button>
-            </div>
+            {/* Navigation Arrows - Only show if there are more items than visible */}
+            {newArrivals.length > 4 && (
+              <div className="absolute inset-0 pointer-events-none">
+                <button 
+                  onClick={() => {
+                    console.log('Left arrow clicked, current slide:', currentSlide)
+                    handlePrevSlide()
+                  }}
+                   className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
+                </button>
+                <button 
+                  onClick={() => {
+                    console.log('Right arrow clicked, current slide:', currentSlide)
+                    handleNextSlide()
+                  }}
+                   className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
+                </button>
+              </div>
+            )}
           </div>
           
           {/* View All Button */}
@@ -388,8 +402,8 @@ export default function Home() {
                   <p className="text-gray-500">No products available</p>
                 </div>
               ) : (
-                [...latestGems, ...latestGems, ...latestGems].map((product, index) => (
-                  <div key={`${product._id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + (index % latestGems.length) * 0.1}s` }}>
+                latestGems.map((product, index) => (
+                  <div key={product._id} className="group animate-fade-in-up flex-shrink-0 w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                     <Link href={`/view-details?id=${product._id}`}>
                       <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <Image
@@ -454,27 +468,29 @@ export default function Home() {
               )}
             </div>
             
-            {/* Navigation Arrows */}
-            <div className="absolute inset-0 pointer-events-none">
-              <button 
-                onClick={() => {
-                  console.log('Left gems arrow clicked, current slide:', currentGemsSlide)
-                  handlePrevGemsSlide()
-                }}
-                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <button 
-                onClick={() => {
-                  console.log('Right gems arrow clicked, current slide:', currentGemsSlide)
-                  handleNextGemsSlide()
-                }}
-                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
+            {/* Navigation Arrows - Only show if there are more items than visible */}
+            {latestGems.length > 4 && (
+              <div className="absolute inset-0 pointer-events-none">
+                <button 
+                  onClick={() => {
+                    console.log('Left gems arrow clicked, current slide:', currentGemsSlide)
+                    handlePrevGemsSlide()
+                  }}
+                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronLeft className="w-6 h-6 text-gray-600" />
+                </button>
+                <button 
+                  onClick={() => {
+                    console.log('Right gems arrow clicked, current slide:', currentGemsSlide)
+                    handleNextGemsSlide()
+                  }}
+                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronRight className="w-6 h-6 text-gray-600" />
+                </button>
+              </div>
+            )}
           </div>
           
           {/* View All Button */}
@@ -558,8 +574,8 @@ export default function Home() {
                   <p className="text-gray-500">No products available</p>
                 </div>
               ) : (
-                [...featuredProducts, ...featuredProducts, ...featuredProducts].map((product, index) => (
-                  <div key={`${product._id}-${index}`} className="group animate-fade-in-up flex-shrink-0 w-96" style={{ animationDelay: `${0.8 + (index % featuredProducts.length) * 0.1}s` }}>
+                featuredProducts.map((product, index) => (
+                  <div key={product._id} className="group animate-fade-in-up flex-shrink-0 w-96" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
                     <div className="bg-white rounded-2xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
                       <Link href={`/view-details?id=${product._id}`}>
                         <div className="relative overflow-hidden cursor-pointer">
@@ -655,27 +671,29 @@ export default function Home() {
               )}
             </div>
             
-            {/* Navigation Arrows */}
-            <div className="absolute inset-0 pointer-events-none">
-              <button 
-                onClick={() => {
-                  console.log('Left featured arrow clicked, current slide:', currentFeaturedSlide)
-                  handlePrevFeaturedSlide()
-                }}
-                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-600" />
-              </button>
-              <button 
-                onClick={() => {
-                  console.log('Right featured arrow clicked, current slide:', currentFeaturedSlide)
-                  handleNextFeaturedSlide()
-                }}
-                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
+            {/* Navigation Arrows - Only show if there are more items than visible */}
+            {featuredProducts.length > 3 && (
+              <div className="absolute inset-0 pointer-events-none">
+                <button 
+                  onClick={() => {
+                    console.log('Left featured arrow clicked, current slide:', currentFeaturedSlide)
+                    handlePrevFeaturedSlide()
+                  }}
+                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronLeft className="w-6 h-6 text-gray-600" />
+                </button>
+                <button 
+                  onClick={() => {
+                    console.log('Right featured arrow clicked, current slide:', currentFeaturedSlide)
+                    handleNextFeaturedSlide()
+                  }}
+                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                >
+                  <ChevronRight className="w-6 h-6 text-gray-600" />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
