@@ -11,7 +11,7 @@ export default function Footer() {
 
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-8 gap-x-4 lg:gap-x-12">
           {/* Company Info */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
@@ -99,17 +99,17 @@ export default function Footer() {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-[#C4A484] mt-1" />
                 <div className="text-gray-400">
-                  <p>123 Jewelry Street</p>
-                  <p>Diamond District, NY 10001</p>
+                  <p>Shop No 45 KE Zozwala Complex</p>
+                  <p>Mohammed Ali chowk station road kalyan west 421301</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-[#C4A484]" />
-                <span className="text-gray-400">+1 (555) 123-4567</span>
+                <span className="text-gray-400">9076055755</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#C4A484]" />
-                <span className="text-gray-400">info@alankarika.com</span>
+                <span className="text-gray-400">alankarikajewels1225@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-[#C4A484]" />
@@ -119,7 +119,7 @@ export default function Footer() {
           </div>
 
           {/* Categories */}
-          <div>
+          <div className="lg:pl-12">
             <h3 className="text-lg font-semibold mb-6">Categories</h3>
             <ul className="space-y-3">
               <li>

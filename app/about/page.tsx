@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Navbar from "@/components/navbar"
-import { 
-  Clock, 
-  Users, 
-  Award, 
+import {
+  Clock,
+  Users,
+  Award,
   Heart,
   Star,
   MapPin,
@@ -31,14 +31,14 @@ export default function AboutPage() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-black/40" />
-                 <div className="absolute inset-0 flex items-center justify-center">
-           <div className="text-center text-white">
-             <h1 className="text-6xl lg:text-7xl font-light mb-6">About Alankarika</h1>
-             <p className="text-2xl lg:text-3xl max-w-3xl mx-auto">
-               Crafting timeless elegance since 1998
-             </p>
-           </div>
-         </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="text-6xl lg:text-7xl font-light mb-6">About Alankarika</h1>
+            <p className="text-2xl lg:text-3xl max-w-3xl mx-auto">
+              Crafting timeless elegance since 1998
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Story Section */}
@@ -51,14 +51,14 @@ export default function AboutPage() {
                 A Legacy of Craftsmanship
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Founded in 1998, Alankarika began as a small family workshop with a simple mission: 
-                to create jewelry that tells stories. What started with a single artisan crafting pieces 
-                by hand has grown into a beloved brand, but our commitment to quality and personal touch 
+                Founded in 1998, Alankarika began as a small family workshop with a simple mission:
+                to create jewelry that tells stories. What started with a single artisan crafting pieces
+                by hand has grown into a beloved brand, but our commitment to quality and personal touch
                 remains unchanged.
               </p>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Every piece in our collection is designed with love and crafted with precision. 
-                We believe that jewelry should be more than beautiful—it should be meaningful, 
+                Every piece in our collection is designed with love and crafted with precision.
+                We believe that jewelry should be more than beautiful—it should be meaningful,
                 connecting generations and celebrating life's most precious moments.
               </p>
               <div className="flex items-center space-x-6">
@@ -98,7 +98,7 @@ export default function AboutPage() {
               The principles that guide every piece we create
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center p-8 hover:shadow-lg transition-shadow">
               <CardContent className="p-0">
@@ -107,7 +107,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Crafted with Love</h3>
                 <p className="text-gray-600">
-                  Every piece is created with passion and attention to detail, ensuring that each item 
+                  Every piece is created with passion and attention to detail, ensuring that each item
                   carries the warmth of human touch and care.
                 </p>
               </CardContent>
@@ -120,7 +120,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Premium Quality</h3>
                 <p className="text-gray-600">
-                  We use only the finest materials and work with skilled artisans to create jewelry 
+                  We use only the finest materials and work with skilled artisans to create jewelry
                   that stands the test of time and beauty.
                 </p>
               </CardContent>
@@ -133,7 +133,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Timeless Design</h3>
                 <p className="text-gray-600">
-                  Our designs blend classic elegance with contemporary style, creating pieces that 
+                  Our designs blend classic elegance with contemporary style, creating pieces that
                   remain beautiful and relevant for generations to come.
                 </p>
               </CardContent>
@@ -151,7 +151,7 @@ export default function AboutPage() {
               The passionate artisans and designers behind every piece
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
@@ -214,10 +214,10 @@ export default function AboutPage() {
             <div>
               <h2 className="text-4xl font-light text-gray-900 mb-6">Get in Touch</h2>
               <p className="text-lg text-gray-600 mb-8">
-                We'd love to hear from you. Whether you have a question about our jewelry, 
+                We'd love to hear from you. Whether you have a question about our jewelry,
                 want to discuss a custom piece, or just want to say hello, we're here to help.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
@@ -225,32 +225,32 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Visit Our Studio</h3>
-                    <p className="text-gray-600">123 Jewelry Lane, Design District<br />New York, NY 10001</p>
+                    <p className="text-gray-600">Shop No 45 KE Zozwala Complex<br />Mohammed Ali chowk station road kalyan west 421301</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
                     <Phone className="w-6 h-6 text-rose-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold">Call Us</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
+                    <p className="text-gray-600">9076055755</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
                     <Mail className="w-6 h-6 text-rose-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold">Email Us</h3>
-                    <p className="text-gray-600">hello@alankarika.com</p>
+                    <p className="text-gray-600">alankarikajewels1225@gmail.com</p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="relative">
               <Image
                 src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"

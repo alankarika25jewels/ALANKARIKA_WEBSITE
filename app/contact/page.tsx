@@ -31,8 +31,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Visit Our Store</h3>
-                      <p className="text-gray-600">123 Jewelry Street</p>
-                      <p className="text-gray-600">Diamond District, NY 10001</p>
+                      <p className="text-gray-600">Shop No 45 KE Zozwala Complex</p>
+                      <p className="text-gray-600">Mohammed Ali chowk station road kalyan west 421301</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
@@ -41,8 +41,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Call Us</h3>
-                      <p className="text-gray-600">+1 (555) 123-4567</p>
-                      <p className="text-gray-600">Toll-free: 1-800-SHOFY-NY</p>
+                      <p className="text-gray-600">9076055755</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
@@ -51,8 +50,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Email Us</h3>
-                      <p className="text-gray-600">info@shofy.com</p>
-                      <p className="text-gray-600">support@shofy.com</p>
+                      <p className="text-gray-600">alankarikajewels1225@gmail.com</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
