@@ -12,12 +12,14 @@ export interface Product {
   sizeConstraints?: string
   quantity: number
   category: string
+  subCategory?: string
   images: Array<{ url: string; publicId: string }>
   videos: Array<{ url: string; publicId: string }>
   rating: number
   reviews: number
   isNew: boolean
   isActive: boolean
+  isOutOfStock: boolean
   createdAt: string
   updatedAt: string
 }
@@ -31,8 +33,10 @@ export interface CreateProductData {
   sizeConstraints?: string
   quantity: number
   category: string
+  subCategory?: string
   images: File[]
   videos: File[]
+  isOutOfStock?: boolean
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {
@@ -50,7 +54,7 @@ export const useProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Fetch with cache headers for better performance
       const response = await fetch('/api/products', {
         headers: {
@@ -58,7 +62,7 @@ export const useProducts = () => {
         }
       })
       const data = await response.json()
-      
+
       if (data.success) {
         setProducts(data.data)
       } else {
@@ -77,9 +81,9 @@ export const useProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const formData = new FormData()
-      
+
       // Add text fields
       formData.append('name', productData.name)
       formData.append('description', productData.description)
@@ -93,24 +97,30 @@ export const useProducts = () => {
       }
       formData.append('quantity', productData.quantity.toString())
       formData.append('category', productData.category)
-      
+      if (productData.subCategory) {
+        formData.append('subCategory', productData.subCategory)
+      }
+      if (productData.isOutOfStock !== undefined) {
+        formData.append('isOutOfStock', productData.isOutOfStock.toString())
+      }
+
       // Add image files
       productData.images.forEach((image, index) => {
         formData.append('images', image)
       })
-      
+
       // Add video files
       productData.videos.forEach((video, index) => {
         formData.append('videos', video)
       })
-      
+
       const response = await fetch('/api/products', {
         method: 'POST',
         body: formData
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         const newProduct = data.data
         setProducts(prev => [newProduct, ...prev])
@@ -133,9 +143,9 @@ export const useProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const formData = new FormData()
-      
+
       // Add text fields
       if (productData.name) formData.append('name', productData.name)
       if (productData.description) formData.append('description', productData.description)
@@ -145,21 +155,25 @@ export const useProducts = () => {
       if (productData.sizeConstraints) formData.append('sizeConstraints', productData.sizeConstraints)
       if (productData.quantity) formData.append('quantity', productData.quantity.toString())
       if (productData.category) formData.append('category', productData.category)
-      
+      if (productData.subCategory) formData.append('subCategory', productData.subCategory)
+      if (productData.isOutOfStock !== undefined) {
+        formData.append('isOutOfStock', productData.isOutOfStock.toString())
+      }
+
       // Add new image files
       if (productData.images) {
         productData.images.forEach((image) => {
           formData.append('newImages', image)
         })
       }
-      
+
       // Add new video files
       if (productData.videos) {
         productData.videos.forEach((video) => {
           formData.append('newVideos', video)
         })
       }
-      
+
       // Add deletion lists
       if (productData.imagesToDelete) {
         formData.append('imagesToDelete', JSON.stringify(productData.imagesToDelete))
@@ -167,14 +181,14 @@ export const useProducts = () => {
       if (productData.videosToDelete) {
         formData.append('videosToDelete', JSON.stringify(productData.videosToDelete))
       }
-      
+
       const response = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         body: formData
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         const updatedProduct = data.data
         setProducts(prev => prev.map(p => p._id === id ? updatedProduct : p))
@@ -197,13 +211,13 @@ export const useProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE'
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         setProducts(prev => prev.filter(p => p._id !== id))
         return true
@@ -225,10 +239,10 @@ export const useProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const response = await fetch(`/api/products/${id}`)
       const data = await response.json()
-      
+
       if (data.success) {
         return data.data
       } else {

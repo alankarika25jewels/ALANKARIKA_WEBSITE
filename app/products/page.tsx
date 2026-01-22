@@ -11,6 +11,7 @@ import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Filter, X } from "lucide-react"
 import Link from "next/link"
+import { calculateDiscount } from "@/lib/price-utils"
 
 interface FilterState {
   categories: string[]
@@ -26,10 +27,12 @@ export default function ProductsPage() {
   const { products, loading } = useProducts()
   const { addItem } = useCart()
   const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category')
+
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('featured')
   const [filters, setFilters] = useState<FilterState>({
-    categories: [],
+    categories: initialCategory ? [initialCategory] : [],
     priceRange: [0, 50000],
     materials: [],
     colors: [],
@@ -38,16 +41,16 @@ export default function ProductsPage() {
     isOnSale: false,
   })
 
-  // Read category from URL and apply it to filters on page load
+  // Read category from URL and apply it to filters when URL changes
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category')
-    if (categoryFromUrl && !filters.categories.includes(categoryFromUrl)) {
+    if (categoryFromUrl) {
       setFilters(prev => ({
         ...prev,
         categories: [categoryFromUrl]
       }))
     }
-  }, [searchParams, filters.categories])
+  }, [searchParams])
 
   // Apply filters to products
   const filteredProducts = products.filter(product => {
@@ -156,13 +159,13 @@ export default function ProductsPage() {
 
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-light text-gray-900 mb-3 md:mb-4">
-              {filters.categories.length > 0 
-                ? `${filters.categories[0]} Collection` 
+              {filters.categories.length > 0
+                ? `${filters.categories[0]} Collection`
                 : 'All Products'
               }
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base px-4">
-              {filters.categories.length > 0 
+              {filters.categories.length > 0
                 ? `Discover our exclusive collection of ${filters.categories[0].toLowerCase()} pieces, each designed to make you shine bright.`
                 : 'Discover our complete collection of handcrafted jewelry pieces, each designed to make you shine bright.'
               }
@@ -172,7 +175,7 @@ export default function ProductsPage() {
           <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8">
             {/* Filters Sidebar - Desktop */}
             <aside className="hidden lg:block lg:w-1/4">
-              <ProductFilters 
+              <ProductFilters
                 filters={filters}
                 onFiltersChange={setFilters}
               />
@@ -192,7 +195,7 @@ export default function ProductsPage() {
                         <X className="w-6 h-6" />
                       </button>
                     </div>
-                    <ProductFilters 
+                    <ProductFilters
                       filters={filters}
                       onFiltersChange={setFilters}
                     />
@@ -293,11 +296,16 @@ export default function ProductsPage() {
                               </div>
                             </div>
                           )}
-                          {product.isOnSale && (
+                          {product.isOnSale && product.originalPrice && (
                             <div className="absolute top-4 left-4">
                               <div className="bg-red-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
-                                {product.offerPercentage}% OFF
+                                {calculateDiscount(product.price, product.originalPrice)}% OFF
                               </div>
+                            </div>
+                          )}
+                          {(product.isOutOfStock || product.quantity <= 0) && (
+                            <div className="absolute top-4 left-4 z-10">
+                              <span className="bg-gray-800 text-white px-3 py-1 text-xs font-bold rounded-full">OUT OF STOCK</span>
                             </div>
                           )}
                         </div>
@@ -306,7 +314,6 @@ export default function ProductsPage() {
                         <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8B7355] transition-colors">
                           {product.name}
                         </h3>
-                        <p className="text-gray-600 text-sm mb-3">JEWELS BY LAHARI</p>
                         <div className="mb-4">
                           <span className="text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
                           {product.originalPrice && product.originalPrice > product.price && (
@@ -315,22 +322,33 @@ export default function ProductsPage() {
                         </div>
                         {/* Action Buttons - Horizontal Layout Below Price */}
                         <div className="flex space-x-3">
-                          <Button 
-                            className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white"
-                            onClick={() => addItem({
-                              id: product._id,
-                              name: product.name,
-                              price: product.price,
-                              originalPrice: product.originalPrice,
-                              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                              category: product.category,
-                              brand: "JEWELS BY LAHARI"
-                            })}
+                          <Button
+                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-[#8B7355] hover:bg-[#D4AF37]"} text-white`}
+                            disabled={product.isOutOfStock || product.quantity <= 0}
+                            onClick={() => {
+                              if (product.isOutOfStock || product.quantity <= 0) return
+                              addItem({
+                                id: product._id,
+                                name: product.name,
+                                price: product.price,
+                                originalPrice: product.originalPrice,
+                                image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                                category: product.category,
+                                brand: ""
+                              })
+                            }}
                           >
-                            Add to Cart
+                            {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                           </Button>
-                          <Link href={`/checkout?product=${product._id}&quantity=1`}>
-                            <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white">
+                          <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
+                            <Button
+                              className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
+                              disabled={product.isOutOfStock || product.quantity <= 0}
+                            >
                               Buy Now
                             </Button>
                           </Link>

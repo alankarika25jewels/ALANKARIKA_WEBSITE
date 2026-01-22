@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import Link from 'next/link'
+import { calculateDiscount } from '@/lib/price-utils'
 
 interface Product {
   _id: string
@@ -31,7 +32,7 @@ export default function SearchPage() {
   const { products, loading, error } = useProducts()
   const { addItem } = useCart()
   const searchParams = useSearchParams()
-  
+
   const [query, setQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('featured')
@@ -52,15 +53,15 @@ export default function SearchPage() {
   // Filter and sort products
   const filteredProducts = products.filter(product => {
     const searchTerm = query.toLowerCase()
-    const matchesQuery = !query || 
-                        product.name.toLowerCase().includes(searchTerm) ||
-                        product.category.toLowerCase().includes(searchTerm) ||
-                        product.description?.toLowerCase().includes(searchTerm) ||
-                        product.keyFeatures?.some(feature => feature.toLowerCase().includes(searchTerm))
-    
+    const matchesQuery = !query ||
+      product.name.toLowerCase().includes(searchTerm) ||
+      product.category.toLowerCase().includes(searchTerm) ||
+      product.description?.toLowerCase().includes(searchTerm) ||
+      product.keyFeatures?.some(feature => feature.toLowerCase().includes(searchTerm))
+
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category)
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
-    
+
     return matchesQuery && matchesCategory && matchesPrice
   })
 
@@ -127,7 +128,7 @@ export default function SearchPage() {
       <Navbar />
       {/* Top spacing to prevent navbar overlap */}
       <div className="h-20"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         {/* Search Header */}
         <div className="mb-8">
@@ -139,7 +140,7 @@ export default function SearchPage() {
               Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} matching your search
             </p>
           )}
-          
+
           {/* Search Bar */}
           <div className="relative max-w-2xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -172,8 +173,17 @@ export default function SearchPage() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3">Categories</h4>
                   <div className="space-y-2">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.length === 0}
+                        onChange={() => setSelectedCategories([])}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">All Categories</span>
+                    </label>
                     {categories.map((category) => (
-                      <label key={category} className="flex items-center">
+                      <label key={category} className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={selectedCategories.includes(category)}
@@ -277,16 +287,15 @@ export default function SearchPage() {
                 <Button onClick={clearFilters}>Clear All Filters</Button>
               </div>
             ) : (
-              <div className={viewMode === 'grid' 
+              <div className={viewMode === 'grid'
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 : "space-y-4"
               }>
                 {sortedProducts.map((product) => (
                   <div
                     key={product._id}
-                    className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group hover:shadow-md transition-all duration-300 ${
-                      viewMode === 'list' ? 'flex' : ''
-                    }`}
+                    className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group hover:shadow-md transition-all duration-300 ${viewMode === 'list' ? 'flex' : ''
+                      }`}
                   >
                     <div className={`relative overflow-hidden ${viewMode === 'list' ? 'w-48 h-48' : 'h-64'}`}>
                       <img
@@ -294,7 +303,7 @@ export default function SearchPage() {
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                      
+
                       {/* Badges */}
                       <div className="absolute top-4 left-4 flex flex-col space-y-2">
                         {product.isNew && (
@@ -302,6 +311,9 @@ export default function SearchPage() {
                         )}
                         {product.isOnSale && (
                           <span className="bg-red-500 text-white px-2 py-1 text-xs font-bold rounded-full">SALE</span>
+                        )}
+                        {(product.isOutOfStock || product.quantity <= 0) && (
+                          <span className="bg-gray-800 text-white px-2 py-1 text-xs font-bold rounded-full">OUT OF STOCK</span>
                         )}
                       </div>
 
@@ -333,9 +345,8 @@ export default function SearchPage() {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-4 h-4 ${
-                                i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                              }`}
+                              className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                                }`}
                             />
                           ))}
                         </div>
@@ -349,31 +360,37 @@ export default function SearchPage() {
                           {product.originalPrice && product.originalPrice > product.price && (
                             <span className="text-sm text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
                           )}
-                          {product.isOnSale && product.offerPercentage && (
+                          {product.isOnSale && product.originalPrice && (
                             <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                              {product.offerPercentage}% OFF
+                              {calculateDiscount(product.price, product.originalPrice)}% OFF
                             </span>
                           )}
                         </div>
                       </div>
 
                       {/* Add to Cart Button */}
-                      <Button 
-                        className="w-full bg-green-600 hover:bg-green-700"
-                        onClick={() => addItem({
-                          id: product._id,
-                          name: product.name,
-                          price: product.price,
-                          originalPrice: product.originalPrice,
-                          image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                          category: product.category,
-                          brand: "JEWELS BY LAHARI"
-                        })}
+                      <Button
+                        className={`w-full ${product.isOutOfStock || product.quantity <= 0
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700"} transition-colors`}
+                        disabled={product.isOutOfStock || product.quantity <= 0}
+                        onClick={() => {
+                          if (product.isOutOfStock || product.quantity <= 0) return
+                          addItem({
+                            id: product._id,
+                            name: product.name,
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                            category: product.category,
+                            brand: ""
+                          })
+                        }}
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
+                        {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                       </Button>
-                      
+
                       {/* View Details Button */}
                       <Link href={`/view-details?id=${product._id}`} className="w-full">
                         <Button variant="outline" className="w-full">
@@ -388,7 +405,7 @@ export default function SearchPage() {
           </main>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   )

@@ -15,6 +15,7 @@ import { ArrowRight, Star, Heart, Eye, ShoppingCart, ChevronLeft, ChevronRight }
 import { useState, useEffect } from "react"
 import { useCart } from "@/contexts/cart-context"
 import { useProducts } from "@/hooks/useProducts"
+import { calculateDiscount } from "@/lib/price-utils"
 
 export default function Home() {
   const { addItem } = useCart()
@@ -23,12 +24,12 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentGemsSlide, setCurrentGemsSlide] = useState(0)
   const [currentFeaturedSlide, setCurrentFeaturedSlide] = useState(0)
-  
+
   // Get real products from database
   const featuredProducts = products.slice(0, 4)
   const newArrivals = products.slice(0, 12)
   const latestGems = products.slice(0, 8)
-  
+
   // Don't block the entire page - show skeleton loaders instead
 
   // Show error state if there's an error
@@ -40,8 +41,8 @@ export default function Home() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <p className="text-red-600 text-lg">Error loading products: {error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               className="mt-4 bg-[#C4A484] hover:bg-[#B39474]"
             >
               Try Again
@@ -52,38 +53,38 @@ export default function Home() {
       </div>
     )
   }
-  
+
   // Calculate max slides - only allow navigation if there are more items than visible
   // Assuming ~3-4 items visible per screen width
   const maxNewArrivalsSlides = Math.max(0, newArrivals.length - 4)
   const maxGemsSlides = Math.max(0, latestGems.length - 4)
   const maxFeaturedSlides = Math.max(0, featuredProducts.length - 3)
-  
+
   const handlePrevSlide = () => {
     if (newArrivals.length <= 4) return // Don't slide if all items are visible
     setCurrentSlide((prev: number) => prev === 0 ? maxNewArrivalsSlides : prev - 1)
   }
-  
+
   const handleNextSlide = () => {
     if (newArrivals.length <= 4) return // Don't slide if all items are visible
     setCurrentSlide((prev: number) => prev >= maxNewArrivalsSlides ? 0 : prev + 1)
   }
-  
+
   const handlePrevGemsSlide = () => {
     if (latestGems.length <= 4) return // Don't slide if all items are visible
     setCurrentGemsSlide((prev: number) => prev === 0 ? maxGemsSlides : prev - 1)
   }
-  
+
   const handleNextGemsSlide = () => {
     if (latestGems.length <= 4) return // Don't slide if all items are visible
     setCurrentGemsSlide((prev: number) => prev >= maxGemsSlides ? 0 : prev + 1)
   }
-  
+
   const handlePrevFeaturedSlide = () => {
     if (featuredProducts.length <= 3) return // Don't slide if all items are visible
     setCurrentFeaturedSlide((prev: number) => prev === 0 ? maxFeaturedSlides : prev - 1)
   }
-  
+
   const handleNextFeaturedSlide = () => {
     if (featuredProducts.length <= 3) return // Don't slide if all items are visible
     setCurrentFeaturedSlide((prev: number) => prev >= maxFeaturedSlides ? 0 : prev + 1)
@@ -124,7 +125,7 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Navbar - Always visible */}
       <Navbar />
-      
+
       {/* Show subtle loading indicator at top if loading */}
       {loading && products.length === 0 && (
         <div className="fixed top-20 left-0 right-0 z-50 bg-blue-50 border-b border-blue-200">
@@ -134,7 +135,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
       {/* Top Section - Increased height */}
       <section className="h-16 md:h-20 bg-gradient-to-r from-[#FFFFFF] via-[#F5EEDC] to-[#8B7355]">
         <div className="h-full flex items-center justify-center px-4">
@@ -160,8 +161,8 @@ export default function Home() {
         </div>
       </section>
 
-        {/* About Section */}
-        <section className="py-12 md:py-20 bg-white">
+      {/* About Section */}
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-6 md:space-y-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
@@ -212,8 +213,8 @@ export default function Home() {
         </div>
       </section>
 
-       {/* New Arrivals Section */}
-       <section className="py-12 md:py-20" style={{ backgroundColor: '#f9f7c4' }}>
+      {/* New Arrivals Section */}
+      <section className="py-12 md:py-20" style={{ backgroundColor: '#f9f7c4' }}>
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between mb-8 md:mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="text-center flex-1">
@@ -222,10 +223,10 @@ export default function Home() {
                 Discover our latest collection of exquisite jewelry pieces, crafted with precision and designed to make you shine.
               </p>
             </div>
-           
+
           </div>
 
-                    <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden">
             <div className="flex gap-4 md:gap-8 transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentSlide * 288}px)` }}>
               {/* Debug: {newArrivals.length} products, Current slide: {currentSlide} */}
               {/* Create a circular carousel by duplicating items */}
@@ -254,38 +255,44 @@ export default function Home() {
                 </div>
               ) : (
                 newArrivals.map((product, index) => (
-                   <div key={product._id} className="group animate-fade-in-up flex-shrink-0 w-72 md:w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
-                     <Link href={`/view-details?id=${product._id}`}>
-                       <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
-                         <Image
-                           src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
-                           alt={product.name}
-                           width={300}
-                           height={400}
-                           className="w-full h-64 md:h-80 object-cover group-hover:scale-110 transition-transform duration-500"
-                         />
-                         <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
-                         {product.isNew && (
-                           <div className="absolute top-3 md:top-4 right-3 md:right-4">
-                             <div className="bg-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-gray-900">
-                               New
-                             </div>
-                           </div>
-                         )}
-                         {product.isOnSale && (
-                           <div className="absolute top-3 md:top-4 left-3 md:left-4">
-                             <div className="bg-red-500 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-white">
-                               {product.offerPercentage}% OFF
-                             </div>
-                           </div>
-                         )}
-                       </div>
-                     </Link>
+                  <div key={product._id} className="group animate-fade-in-up flex-shrink-0 w-72 md:w-80" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
+                    <Link href={`/view-details?id=${product._id}`}>
+                      <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <Image
+                          src={product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"}
+                          alt={product.name}
+                          width={300}
+                          height={400}
+                          className="w-full h-64 md:h-80 object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                        {product.isNew && (
+                          <div className="absolute top-3 md:top-4 right-3 md:right-4">
+                            <div className="bg-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-gray-900">
+                              New
+                            </div>
+                          </div>
+                        )}
+                        {product.isOnSale && (
+                          <div className="absolute top-3 md:top-4 left-3 md:left-4">
+                            <div className="bg-red-500 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-white">
+                              {calculateDiscount(product.price, product.originalPrice)}% OFF
+                            </div>
+                          </div>
+                        )}
+                        {(product.isOutOfStock || product.quantity <= 0) && (
+                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-10 transition-all duration-300">
+                            <span className="bg-gray-800 text-white px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-bold shadow-xl border border-gray-600">
+                              OUT OF STOCK
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                     <div className="mt-3 md:mt-4 p-3 md:p-4">
                       <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8B7355] transition-colors">
                         {product.name}
                       </h3>
-                      <p className="text-gray-600 text-xs md:text-sm mb-3">JEWELS BY LAHARI</p>
                       <div className="mb-3 md:mb-4">
                         <span className="text-lg md:text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
                         {product.originalPrice && product.originalPrice > product.price && (
@@ -294,24 +301,35 @@ export default function Home() {
                       </div>
                       {/* Action Buttons - Horizontal Layout Below Price */}
                       <div className="flex space-x-2 md:space-x-3">
-                        <Button 
-                          className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white text-xs md:text-sm py-2"
-                          onClick={() => addItem({
-                            id: product._id,
-                            name: product.name,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                            category: product.category,
-                            brand: "JEWELS BY LAHARI"
-                          })}
+                        <Button
+                          className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-[#8B7355] hover:bg-[#D4AF37]"} text-white text-xs md:text-sm py-2`}
+                          disabled={product.isOutOfStock || product.quantity <= 0}
+                          onClick={() => {
+                            if (product.isOutOfStock || product.quantity <= 0) return
+                            addItem({
+                              id: product._id,
+                              name: product.name,
+                              price: product.price,
+                              originalPrice: product.originalPrice,
+                              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                              category: product.category,
+                              brand: ""
+                            })
+                          }}
                         >
                           <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                          <span className="hidden sm:inline">Add to Cart</span>
-                          <span className="sm:hidden">Add</span>
+                          <span className="hidden sm:inline">{product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}</span>
+                          <span className="sm:hidden">{product.isOutOfStock || product.quantity <= 0 ? "OOS" : "Add"}</span>
                         </Button>
-                        <Link href={`/checkout?product=${product._id}&quantity=1`}>
-                          <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white text-xs md:text-sm py-2">
+                        <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
+                          <Button
+                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white text-xs md:text-sm py-2`}
+                            disabled={product.isOutOfStock || product.quantity <= 0}
+                          >
                             Buy Now
                           </Button>
                         </Link>
@@ -321,32 +339,32 @@ export default function Home() {
                 ))
               )}
             </div>
-            
+
             {/* Navigation Arrows - Only show if there are more items than visible */}
             {newArrivals.length > 4 && (
               <div className="absolute inset-0 pointer-events-none">
-                <button 
+                <button
                   onClick={() => {
                     console.log('Left arrow clicked, current slide:', currentSlide)
                     handlePrevSlide()
                   }}
-                   className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     console.log('Right arrow clicked, current slide:', currentSlide)
                     handleNextSlide()
                   }}
-                   className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-gray-600" />
                 </button>
               </div>
             )}
           </div>
-          
+
           {/* View All Button */}
           <div className="text-center mt-8 md:mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
             <Link href="/products">
@@ -358,8 +376,8 @@ export default function Home() {
         </div>
       </section>
 
-       {/* Latest Gems Section */}
-       <section className="py-12 md:py-20 bg-white">
+      {/* Latest Gems Section */}
+      <section className="py-12 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between mb-8 md:mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="text-center flex-1">
@@ -417,8 +435,15 @@ export default function Home() {
                         {product.isOnSale && (
                           <div className="absolute top-4 left-4">
                             <div className="bg-red-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
-                              {product.offerPercentage}% OFF
+                              {calculateDiscount(product.price, product.originalPrice)}% OFF
                             </div>
+                          </div>
+                        )}
+                        {(product.isOutOfStock || product.quantity <= 0) && (
+                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-10 transition-all duration-300">
+                            <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl border border-gray-600">
+                              OUT OF STOCK
+                            </span>
                           </div>
                         )}
                       </div>
@@ -427,7 +452,6 @@ export default function Home() {
                       <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8B7355] transition-colors">
                         {product.name}
                       </h3>
-                      <p className="text-gray-600 text-sm mb-3">JEWELS BY LAHARI</p>
                       <div className="mb-4">
                         <span className="text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
                         {product.originalPrice && product.originalPrice > product.price && (
@@ -436,23 +460,34 @@ export default function Home() {
                       </div>
                       {/* Action Buttons - Horizontal Layout Below Price */}
                       <div className="flex space-x-3">
-                        <Button 
-                          className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white"
-                          onClick={() => addItem({
-                            id: product._id,
-                            name: product.name,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                            category: product.category,
-                            brand: "JEWELS BY LAHARI"
-                          })}
+                        <Button
+                          className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-[#8B7355] hover:bg-[#D4AF37]"} text-white`}
+                          disabled={product.isOutOfStock || product.quantity <= 0}
+                          onClick={() => {
+                            if (product.isOutOfStock || product.quantity <= 0) return
+                            addItem({
+                              id: product._id,
+                              name: product.name,
+                              price: product.price,
+                              originalPrice: product.originalPrice,
+                              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                              category: product.category,
+                              brand: ""
+                            })
+                          }}
                         >
                           <ShoppingCart className="w-4 h-4 mr-2" />
-                          Add to Cart
+                          {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                         </Button>
-                        <Link href={`/checkout?product=${product._id}&quantity=1`}>
-                          <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white">
+                        <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
+                          <Button
+                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white`}
+                            disabled={product.isOutOfStock || product.quantity <= 0}
+                          >
                             Buy Now
                           </Button>
                         </Link>
@@ -462,32 +497,32 @@ export default function Home() {
                 ))
               )}
             </div>
-            
+
             {/* Navigation Arrows - Only show if there are more items than visible */}
             {latestGems.length > 4 && (
               <div className="absolute inset-0 pointer-events-none">
-                <button 
+                <button
                   onClick={() => {
                     console.log('Left gems arrow clicked, current slide:', currentGemsSlide)
                     handlePrevGemsSlide()
                   }}
-                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronLeft className="w-6 h-6 text-gray-600" />
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     console.log('Right gems arrow clicked, current slide:', currentGemsSlide)
                     handleNextGemsSlide()
                   }}
-                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronRight className="w-6 h-6 text-gray-600" />
                 </button>
               </div>
             )}
           </div>
-          
+
           {/* View All Button */}
           <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>
             <Link href="/products">
@@ -499,8 +534,8 @@ export default function Home() {
         </div>
       </section>
 
-       {/* Categories Section */}
-       <section className="py-20 bg-white mt-16">
+      {/* Categories Section */}
+      <section className="py-20 bg-white mt-16">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <h2 className="font-light-300 text-5xl text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>Shop by Category</h2>
@@ -591,7 +626,7 @@ export default function Home() {
                               <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">SALE</span>
                             )}
                           </div>
-                          
+
                           {/* Featured Badge */}
                           <div className="absolute top-4 right-4">
                             <span className="bg-[#D4AF37] text-black px-3 py-1 text-xs font-bold rounded-full">FEATURED</span>
@@ -607,9 +642,8 @@ export default function Home() {
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`w-4 h-4 ${
-                                  i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                                }`}
+                                className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                                  }`}
                               />
                             ))}
                           </div>
@@ -620,7 +654,6 @@ export default function Home() {
                           {product.name}
                         </h3>
 
-                        <p className="text-sm text-gray-600 mb-3">JEWELS BY LAHARI</p>
 
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2">
@@ -638,7 +671,7 @@ export default function Home() {
 
                         {/* Action Buttons */}
                         <div className="flex space-x-3 mt-4">
-                          <Button 
+                          <Button
                             className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white py-2 px-4 text-sm font-medium"
                             onClick={() => addItem({
                               id: product._id,
@@ -647,7 +680,7 @@ export default function Home() {
                               originalPrice: product.originalPrice,
                               image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
                               category: product.category,
-                              brand: "JEWELS BY LAHARI"
+                              brand: ""
                             })}
                           >
                             <ShoppingCart className="w-4 h-4 mr-2" />
@@ -665,25 +698,25 @@ export default function Home() {
                 ))
               )}
             </div>
-            
+
             {/* Navigation Arrows - Only show if there are more items than visible */}
             {featuredProducts.length > 3 && (
               <div className="absolute inset-0 pointer-events-none">
-                <button 
+                <button
                   onClick={() => {
                     console.log('Left featured arrow clicked, current slide:', currentFeaturedSlide)
                     handlePrevFeaturedSlide()
                   }}
-                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronLeft className="w-6 h-6 text-gray-600" />
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     console.log('Right featured arrow clicked, current slide:', currentFeaturedSlide)
                     handleNextFeaturedSlide()
                   }}
-                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-40 cursor-pointer pointer-events-auto"
                 >
                   <ChevronRight className="w-6 h-6 text-gray-600" />
                 </button>
@@ -708,7 +741,7 @@ export default function Home() {
 
 
 
-     
+
 
       <Footer />
     </div>

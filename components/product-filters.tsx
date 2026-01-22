@@ -122,6 +122,18 @@ export default function ProductFilters({ filters, onFiltersChange }: ProductFilt
         </button>
         {openSections.category && (
           <div className="space-y-2">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filters.categories.length === 0}
+                className="mr-2 text-[#C4A484] focus:ring-[#C4A484]"
+                onChange={() => updateFilter('categories', [])}
+              />
+              <span className="text-gray-700">All Categories</span>
+              <span className="ml-auto text-xs text-gray-500">
+                ({products.length})
+              </span>
+            </label>
             {uniqueCategories.map((category) => (
               <label key={category} className="flex items-center cursor-pointer">
                 <input
@@ -209,11 +221,10 @@ export default function ProductFilters({ filters, onFiltersChange }: ProductFilt
                 <button
                   key={priceRange.label}
                   onClick={() => updateFilter('priceRange', priceRange.range)}
-                  className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                    filters.priceRange[0] === priceRange.range[0] && filters.priceRange[1] === priceRange.range[1]
+                  className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${filters.priceRange[0] === priceRange.range[0] && filters.priceRange[1] === priceRange.range[1]
                       ? "bg-[#C4A484] text-white"
                       : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {priceRange.label}
                 </button>
@@ -312,9 +323,8 @@ export default function ProductFilters({ filters, onFiltersChange }: ProductFilt
               <button
                 key={colorOption.name}
                 onClick={() => toggleArrayFilter('colors', colorOption.name)}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  filters.colors.includes(colorOption.name) ? "border-[#C4A484]" : "border-gray-300"
-                }`}
+                className={`w-8 h-8 rounded-full border-2 ${filters.colors.includes(colorOption.name) ? "border-[#C4A484]" : "border-gray-300"
+                  }`}
                 style={{ backgroundColor: colorOption.color }}
                 title={colorOption.name}
               />
@@ -338,11 +348,10 @@ export default function ProductFilters({ filters, onFiltersChange }: ProductFilt
               <button
                 key={size}
                 onClick={() => toggleArrayFilter('sizes', size)}
-                className={`px-3 py-2 text-sm border rounded ${
-                  filters.sizes.includes(size)
+                className={`px-3 py-2 text-sm border rounded ${filters.sizes.includes(size)
                     ? "border-[#C4A484] bg-[#C4A484] text-white"
                     : "border-gray-300 text-gray-700 hover:border-[#C4A484]"
-                }`}
+                  }`}
               >
                 {size}
               </button>
@@ -357,10 +366,10 @@ export default function ProductFilters({ filters, onFiltersChange }: ProductFilt
           <p className="text-sm text-gray-600 mb-2">
             {activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''} applied
           </p>
-          <Button 
-            onClick={clearAllFilters} 
-            variant="outline" 
-            size="sm" 
+          <Button
+            onClick={clearAllFilters}
+            variant="outline"
+            size="sm"
             className="w-full"
           >
             Clear All Filters

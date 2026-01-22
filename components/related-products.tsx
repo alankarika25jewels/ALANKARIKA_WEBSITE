@@ -6,6 +6,7 @@ import { Heart, ShoppingCart, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useProducts } from "@/hooks/useProducts"
 import { useCart } from "@/contexts/cart-context"
+import { calculateDiscount } from "@/lib/price-utils"
 
 export default function RelatedProducts() {
   const { products } = useProducts()
@@ -43,6 +44,17 @@ export default function RelatedProducts() {
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
 
+                <div className="absolute top-4 left-4 flex flex-col space-y-2">
+                  {product.isOnSale && product.originalPrice && (
+                    <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">
+                      {calculateDiscount(product.price, product.originalPrice)}% OFF
+                    </span>
+                  )}
+                  {(product.isOutOfStock || product.quantity <= 0) && (
+                    <span className="bg-gray-800 text-white px-3 py-1 text-xs font-bold rounded-full">OUT OF STOCK</span>
+                  )}
+                </div>
+
                 <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-[#C4A484] hover:text-white transition-colors">
                     <Heart className="w-5 h-5" />
@@ -50,20 +62,26 @@ export default function RelatedProducts() {
                 </div>
 
                 <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Button 
-                    className="w-full bg-[#C4A484] hover:bg-[#B8956F] text-white"
-                    onClick={() => addItem({
-                      id: product._id,
-                      name: product.name,
-                      price: product.price,
-                      originalPrice: product.originalPrice,
-                      image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                      category: product.category,
-                      brand: "JEWELS BY LAHARI"
-                    })}
+                  <Button
+                    className={`w-full ${product.isOutOfStock || product.quantity <= 0
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-[#C4A484] hover:bg-[#B8956F]"} text-white`}
+                    disabled={product.isOutOfStock || product.quantity <= 0}
+                    onClick={() => {
+                      if (product.isOutOfStock || product.quantity <= 0) return
+                      addItem({
+                        id: product._id,
+                        name: product.name,
+                        price: product.price,
+                        originalPrice: product.originalPrice,
+                        image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                        category: product.category,
+                        brand: ""
+                      })
+                    }}
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Cart
+                    {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </div>
               </div>
@@ -74,9 +92,8 @@ export default function RelatedProducts() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                        }`}
+                        className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                          }`}
                       />
                     ))}
                   </div>

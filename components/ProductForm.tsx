@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { X, Plus, Upload, Trash2, Image as ImageIcon, Video } from 'lucide-react'
 import { CreateProductData, UpdateProductData, Product } from '@/hooks/useProducts'
+import { useCategories } from '@/hooks/useCategories'
 
 interface ProductFormProps {
   isOpen: boolean
@@ -21,8 +22,12 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
     originalPrice: String(product?.originalPrice || ''),
     sizeConstraints: String(product?.sizeConstraints || ''),
     quantity: String(product?.quantity || ''),
-    category: String(product?.category || 'Rings')
+    category: String(product?.category || ''),
+    subCategory: String(product?.subCategory || ''),
+    isOutOfStock: product?.isOutOfStock || false
   })
+
+  const { categories: dynamicCategories } = useCategories()
 
   const [images, setImages] = useState<File[]>([])
   const [videos, setVideos] = useState<File[]>([])
@@ -34,7 +39,8 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
 
-  const categories = ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Pendants', 'Anklets']
+  const selectedCategory = dynamicCategories.find(c => c.name === formData.category)
+  const subCategories = selectedCategory?.subCategories || []
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -105,6 +111,8 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
         sizeConstraints: formData.sizeConstraints.trim() || undefined,
         quantity: parseInt(formData.quantity),
         category: formData.category,
+        subCategory: formData.subCategory.trim() || undefined,
+        isOutOfStock: formData.isOutOfStock,
         images,
         videos
       }
@@ -119,6 +127,7 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
         sizeConstraints: formData.sizeConstraints.trim() || undefined,
         quantity: parseInt(formData.quantity),
         category: formData.category,
+        isOutOfStock: formData.isOutOfStock,
         images: images.length > 0 ? images : undefined,
         videos: videos.length > 0 ? videos : undefined,
         imagesToDelete: imagesToDelete.length > 0 ? imagesToDelete : undefined,
@@ -137,7 +146,9 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
       originalPrice: '',
       sizeConstraints: '',
       quantity: '',
-      category: 'Rings'
+      category: '',
+      subCategory: '',
+      isOutOfStock: false
     })
     setImages([])
     setVideos([])
@@ -187,16 +198,39 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
+                onChange={(e) => {
+                  handleInputChange('category', e.target.value)
+                  handleInputChange('subCategory', '') // Reset sub-category when category changes
+                }}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                <option value="">Select Category</option>
+                {dynamicCategories.map(cat => (
+                  <option key={cat._id} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
             </div>
           </div>
+
+          {/* Sub-category */}
+          {formData.category && subCategories.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sub-category
+              </label>
+              <select
+                value={formData.subCategory}
+                onChange={(e) => handleInputChange('subCategory', e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Sub-category (Optional)</option>
+                {subCategories.map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Description */}
           <div>
@@ -314,6 +348,21 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
             />
           </div>
 
+          {/* Out of Stock Toggle */}
+          <div className="flex items-center space-x-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <input
+              type="checkbox"
+              id="isOutOfStock"
+              checked={formData.isOutOfStock}
+              onChange={(e) => setFormData(prev => ({ ...prev, isOutOfStock: e.target.checked }))}
+              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="isOutOfStock" className="flex flex-col cursor-pointer">
+              <span className="text-sm font-semibold text-gray-900">Mark as Out of Stock</span>
+              <span className="text-xs text-gray-500">This will display an "Out of Stock" badge and disable purchase buttons.</span>
+            </label>
+          </div>
+
           {/* Media Uploads */}
           <div className="space-y-6">
             {/* Images */}
@@ -321,7 +370,7 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Images
               </label>
-              
+
               {/* Existing Images */}
               {existingImages.length > 0 && (
                 <div className="mb-4">
@@ -399,7 +448,7 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Videos
               </label>
-              
+
               {/* Existing Videos */}
               {existingVideos.length > 0 && (
                 <div className="mb-4">

@@ -46,8 +46,12 @@ const ProductSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: [true, 'Product category is required'],
-    enum: ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Pendants', 'Anklets']
+    required: [true, 'Product category is required']
+  },
+  subCategory: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Sub-category name cannot exceed 50 characters']
   },
   images: [{
     url: {
@@ -87,6 +91,10 @@ const ProductSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isOutOfStock: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,
@@ -94,13 +102,22 @@ const ProductSchema = new mongoose.Schema({
 })
 
 // Calculate offer percentage if original price is provided
-ProductSchema.pre('save', function(next) {
+ProductSchema.pre('save', function (next) {
   if (this.originalPrice && this.originalPrice > this.price) {
     this.offerPercentage = Math.round(((this.originalPrice - this.price) / this.originalPrice) * 100)
     this.isOnSale = true
+  } else {
+    this.offerPercentage = 0
+    this.isOnSale = false
   }
   next()
 })
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema)
+// Force delete old model in development to ensure schema changes are picked up
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.Product
+}
+
+const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema)
+export default Product
 

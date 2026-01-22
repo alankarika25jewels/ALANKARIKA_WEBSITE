@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Eye, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { useProducts } from "@/hooks/useProducts"
+import { calculateDiscount } from "@/lib/price-utils"
 
 export default function ProductGrid() {
   const { addItem } = useCart()
@@ -63,8 +64,11 @@ export default function ProductGrid() {
               {product.isNew && (
                 <span className="bg-green-500 text-white px-3 py-1 text-xs font-bold rounded-full">NEW</span>
               )}
-              {product.isOnSale && (
-                <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">SALE</span>
+              {product.isOnSale && product.originalPrice && (
+                <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">{calculateDiscount(product.price, product.originalPrice)}% OFF</span>
+              )}
+              {(product.isOutOfStock || product.quantity <= 0) && (
+                <span className="bg-gray-800 text-white px-3 py-1 text-xs font-bold rounded-full">OUT OF STOCK</span>
               )}
             </div>
 
@@ -89,9 +93,8 @@ export default function ProductGrid() {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-4 h-4 ${
-                      i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                    }`}
+                    className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                      }`}
                   />
                 ))}
               </div>
@@ -104,7 +107,6 @@ export default function ProductGrid() {
               </h3>
             </Link>
 
-            <p className="text-sm text-gray-600 mb-3">JEWELS BY LAHARI</p>
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -122,20 +124,26 @@ export default function ProductGrid() {
 
             {/* Action Buttons - Horizontal Layout Below Price */}
             <div className="flex space-x-3">
-              <Button 
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => addItem({
-                  id: product._id,
-                  name: product.name,
-                  price: product.price,
-                  originalPrice: product.originalPrice || undefined,
-                  image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-                  category: product.category,
-                  brand: "JEWELS BY LAHARI"
-                })}
+              <Button
+                className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"} text-white`}
+                disabled={product.isOutOfStock || product.quantity <= 0}
+                onClick={() => {
+                  if (product.isOutOfStock || product.quantity <= 0) return
+                  addItem({
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    originalPrice: product.originalPrice || undefined,
+                    image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+                    category: product.category,
+                    brand: ""
+                  })
+                }}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
+                {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
               </Button>
             </div>
           </div>

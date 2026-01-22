@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { calculateDiscount } from "@/lib/price-utils"
 
 interface Product {
   _id: string
@@ -22,12 +23,13 @@ interface Product {
   category: string
   quantity: number
   isNew: boolean
+  isOutOfStock: boolean
   isOnSale: boolean
   offerPercentage?: number
   sizeConstraints?: string
 }
 
-export default function ProductDetail() {
+export default function ProductDetail({ productId: propProductId }: { productId?: string }) {
   const { addItem } = useCart()
   const searchParams = useSearchParams()
   const [selectedImage, setSelectedImage] = useState(0)
@@ -41,15 +43,15 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true)
-        
-        // Get product ID from URL params or use a default
-        const productId = searchParams.get('id') || searchParams.get('productId')
-        
+
+        // Get product ID from prop, URL params or use a default
+        const productId = propProductId || searchParams.get('id') || searchParams.get('productId')
+
         if (productId) {
           // Fetch specific product by ID
           const response = await fetch(`/api/products/${productId}`)
           const data = await response.json()
-          
+
           if (data.success) {
             setProduct(data.data)
           } else {
@@ -59,7 +61,7 @@ export default function ProductDetail() {
           // If no product ID, fetch the first available product or show a message
           const response = await fetch('/api/products')
           const data = await response.json()
-          
+
           if (data.success && data.data.length > 0) {
             setProduct(data.data[0]) // Show first product as default
           } else {
@@ -135,7 +137,7 @@ export default function ProductDetail() {
       originalPrice: product.originalPrice,
       image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
       category: product.category,
-      brand: "JEWELS BY LAHARI"
+      brand: ""
     })
   }
 
@@ -160,9 +162,8 @@ export default function ProductDetail() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square overflow-hidden rounded-lg border-2 ${
-                      selectedImage === index ? "border-[#8B7355]" : "border-gray-200"
-                    }`}
+                    className={`aspect-square overflow-hidden rounded-lg border-2 ${selectedImage === index ? "border-[#8B7355]" : "border-gray-200"
+                      }`}
                   >
                     <Image
                       src={image.url}
@@ -181,15 +182,19 @@ export default function ProductDetail() {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-light text-gray-900 mb-4">{product.name}</h1>
+              {(product.isOutOfStock || product.quantity <= 0) && (
+                <div className="mb-4">
+                  <span className="bg-gray-800 text-white px-4 py-1.5 rounded-full text-sm font-bold">OUT OF STOCK</span>
+                </div>
+              )}
 
               <div className="flex items-center space-x-4 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                      }`}
+                      className={`w-5 h-5 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                        }`}
                     />
                   ))}
                 </div>
@@ -201,9 +206,9 @@ export default function ProductDetail() {
                 {product.originalPrice && product.originalPrice > product.price && (
                   <span className="text-xl text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
                 )}
-                {product.isOnSale && product.offerPercentage && (
+                {product.isOnSale && product.originalPrice && (
                   <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {product.offerPercentage}% OFF
+                    {calculateDiscount(product.price, product.originalPrice)}% OFF
                   </span>
                 )}
               </div>
@@ -234,11 +239,10 @@ export default function ProductDetail() {
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size.trim())}
-                        className={`px-4 py-2 border rounded-lg transition-colors ${
-                          selectedSize === size.trim()
-                            ? "border-[#8B7355] bg-[#8B7355] text-white"
-                            : "border-gray-300 hover:border-[#8B7355]"
-                        }`}
+                        className={`px-4 py-2 border rounded-lg transition-colors ${selectedSize === size.trim()
+                          ? "border-[#8B7355] bg-[#8B7355] text-white"
+                          : "border-gray-300 hover:border-[#8B7355]"
+                          }`}
                       >
                         {size.trim()}
                       </button>
@@ -254,7 +258,7 @@ export default function ProductDetail() {
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={decrementQuantity}
-                      disabled={quantity <= 1}
+                      disabled={product.isOutOfStock || product.quantity <= 0 || quantity <= 1}
                       className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
                     >
                       <Minus className="w-4 h-4" />
@@ -262,13 +266,17 @@ export default function ProductDetail() {
                     <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
                     <button
                       onClick={incrementQuantity}
-                      disabled={quantity >= product.quantity}
+                      disabled={product.isOutOfStock || product.quantity <= 0 || quantity >= product.quantity}
                       className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
-                  <span className="text-gray-600">({product.quantity} available)</span>
+                  {(product.isOutOfStock || product.quantity <= 0) ? (
+                    <span className="text-red-600 font-medium">Out of Stock</span>
+                  ) : (
+                    <span className="text-gray-600">({product.quantity} available)</span>
+                  )}
                 </div>
               </div>
 
@@ -276,13 +284,24 @@ export default function ProductDetail() {
               <div className="flex space-x-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-[#8B7355] hover:bg-[#D4AF37] text-white py-3 text-lg"
+                  disabled={product.isOutOfStock || product.quantity <= 0}
+                  className={`flex-1 h-12 text-lg ${product.isOutOfStock || product.quantity <= 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#8B7355] hover:bg-[#D4AF37]"} text-white`}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
+                  {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                 </Button>
-                <Link href={`/checkout?product=${product._id}&quantity=${quantity}`}>
-                  <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white py-3 text-lg">
+                <Link
+                  href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=${quantity}`}
+                  className="flex-1"
+                >
+                  <Button
+                    disabled={product.isOutOfStock || product.quantity <= 0}
+                    className={`w-full h-12 text-lg ${product.isOutOfStock || product.quantity <= 0
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
+                  >
                     Buy Now
                   </Button>
                 </Link>
@@ -298,10 +317,10 @@ export default function ProductDetail() {
                     <Truck className="w-5 h-5 mr-2" />
                     <span>Free Shipping</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <Link href="/return-policy" className="flex items-center text-gray-600 hover:text-[#8B7355] transition-colors">
                     <RotateCcw className="w-5 h-5 mr-2" />
-                    <span>Easy Returns</span>
-                  </div>
+                    <span>7 Days Return Policy</span>
+                  </Link>
                   <div className="flex items-center text-gray-600">
                     <Shield className="w-5 h-5 mr-2" />
                     <span>Secure Payment</span>

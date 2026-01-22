@@ -10,11 +10,12 @@ import { useProducts } from "@/hooks/useProducts"
 import { useOrders } from "@/hooks/useOrders"
 import ProductForm from "@/components/ProductForm"
 import OrderDetailModal from "@/components/OrderDetailModal"
+import CategoryManager from "@/components/CategoryManager"
 
 export default function DashboardPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, updateOrder } = useOrders()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'categories'>('dashboard')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [orderFilters, setOrderFilters] = useState({
@@ -23,7 +24,7 @@ export default function DashboardPage() {
   })
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
-  
+
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
@@ -34,7 +35,7 @@ export default function DashboardPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError('')
-    
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -98,7 +99,7 @@ export default function DashboardPage() {
                 Enter your credentials to access the dashboard
               </p>
             </div>
-            
+
             <form className="mt-8 space-y-6" onSubmit={handleLogin}>
               <div className="space-y-4">
                 <div>
@@ -118,7 +119,7 @@ export default function DashboardPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Password
@@ -201,10 +202,10 @@ export default function DashboardPage() {
     const newStatus = prompt(
       `Current status: ${order.orderStatus}\nEnter new status (pending/confirmed/processing/shipped/delivered/cancelled):`
     )
-    
+
     if (newStatus && ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].includes(newStatus)) {
       try {
-        await updateOrder(order._id, { 
+        await updateOrder(order._id, {
           orderStatus: newStatus as 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
         })
         alert('Order status updated successfully!')
@@ -248,7 +249,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -262,7 +263,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
@@ -276,7 +277,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
@@ -435,7 +436,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
@@ -449,7 +450,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -463,7 +464,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
@@ -622,9 +623,9 @@ export default function DashboardPage() {
                       <Badge
                         variant={
                           order.orderStatus === 'delivered' ? 'default' :
-                          order.orderStatus === 'cancelled' ? 'destructive' :
-                          order.orderStatus === 'pending' ? 'secondary' :
-                          'outline'
+                            order.orderStatus === 'cancelled' ? 'destructive' :
+                              order.orderStatus === 'pending' ? 'secondary' :
+                                'outline'
                         }
                         className="capitalize"
                       >
@@ -638,8 +639,8 @@ export default function DashboardPage() {
                       <Badge
                         variant={
                           order.paymentStatus === 'completed' ? 'default' :
-                          order.paymentStatus === 'failed' ? 'destructive' :
-                          'secondary'
+                            order.paymentStatus === 'failed' ? 'destructive' :
+                              'secondary'
                         }
                         className="text-xs"
                       >
@@ -703,26 +704,35 @@ export default function DashboardPage() {
             <nav className="space-y-2">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === 'dashboard'
-                    ? 'bg-[#C4A484] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'dashboard'
+                  ? 'bg-[#C4A484] text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <LayoutDashboard className="w-5 h-5 mr-3" />
                 Dashboard
               </button>
-              
+
               <button
                 onClick={() => setActiveTab('orders')}
-                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === 'orders'
-                    ? 'bg-[#C4A484] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'orders'
+                  ? 'bg-[#C4A484] text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <Package className="w-5 h-5 mr-3" />
                 Orders & Inventory
+              </button>
+
+              <button
+                onClick={() => setActiveTab('categories')}
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'categories'
+                  ? 'bg-[#C4A484] text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                <Filter className="w-5 h-5 mr-3" />
+                Categories
               </button>
             </nav>
           </div>
@@ -730,7 +740,13 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <div className="flex-1 p-8">
-          {activeTab === 'dashboard' ? <DashboardContent /> : <OrdersInventoryContent />}
+          {activeTab === 'dashboard' ? (
+            <DashboardContent />
+          ) : activeTab === 'orders' ? (
+            <OrdersInventoryContent />
+          ) : (
+            <CategoryManager />
+          )}
         </div>
       </div>
 
@@ -752,7 +768,7 @@ export default function DashboardPage() {
                 ✕
               </Button>
             </div>
-            
+
             <ProductForm
               isOpen={showAddForm}
               onClose={() => {

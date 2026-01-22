@@ -3,10 +3,11 @@ import Link from "next/link"
 import { Heart, Eye, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useProducts } from "@/hooks/useProducts"
+import { calculateDiscount } from "@/lib/price-utils"
 
 export default function FeaturedProducts() {
   const { products, loading } = useProducts()
-  
+
   // Get first 4 products for featured section
   const featuredProducts = products.slice(0, 4)
 
@@ -84,8 +85,11 @@ export default function FeaturedProducts() {
                   {product.isNew && (
                     <span className="bg-green-500 text-white px-3 py-1 text-xs font-bold rounded-full">NEW</span>
                   )}
-                  {product.isOnSale && (
-                    <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">SALE</span>
+                  {product.isOnSale && product.originalPrice && (
+                    <span className="bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-full">{calculateDiscount(product.price, product.originalPrice)}% OFF</span>
+                  )}
+                  {(product.isOutOfStock || product.quantity <= 0) && (
+                    <span className="bg-gray-800 text-white px-3 py-1 text-xs font-bold rounded-full">OUT OF STOCK</span>
                   )}
                 </div>
 
@@ -110,9 +114,8 @@ export default function FeaturedProducts() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                        }`}
+                        className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                          }`}
                       />
                     ))}
                   </div>
@@ -125,7 +128,6 @@ export default function FeaturedProducts() {
                   </h3>
                 </Link>
 
-                <p className="text-sm text-gray-600 mb-3">JEWELS BY LAHARI</p>
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
@@ -143,11 +145,18 @@ export default function FeaturedProducts() {
 
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
-                  <Link href={`/view-details?id=${product._id}`} className="flex-1">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      View Details
-                    </Button>
-                  </Link>
+                  <Button
+                    className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-[#C4A484] hover:bg-[#B8956F]"} text-white`}
+                    disabled={product.isOutOfStock || product.quantity <= 0}
+                    onClick={() => {
+                      if (product.isOutOfStock || product.quantity <= 0) return
+                      window.location.href = `/products/${product._id}`
+                    }}
+                  >
+                    {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "View Details"}
+                  </Button>
                 </div>
               </div>
             </div>

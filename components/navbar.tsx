@@ -18,8 +18,8 @@ export default function Navbar() {
   const { state } = useCart()
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-none" style={{background: 'linear-gradient(to right, #FFFFFF 0%, #F5EEDC 12%, #8B7355 80%, #D4AF37 93%)'}}>
-              <div className="w-full px-2 md:px-4 lg:px-8 mx-auto">
+    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-none" style={{ background: 'linear-gradient(to right, #FFFFFF 0%, #F5EEDC 12%, #8B7355 80%, #D4AF37 93%)' }}>
+      <div className="w-full px-2 md:px-4 lg:px-8 mx-auto">
         {/* Main navbar */}
         <div className="flex items-center justify-center lg:justify-between py-0 ml-30">
           {/* Mobile Logo */}
@@ -39,15 +39,15 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-20  ml-40">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-0.5 flex-shrink-0">
-  <Image
-    src="/logoalan-removebg-preview.png"
-    alt="Alankarika Logo"
-    width={80}
-    height={80}
-    className="w-20 h-20 object-contain scale-[2.8] translate-y-1"
-  />
+              <Image
+                src="/logoalan-removebg-preview.png"
+                alt="Alankarika Logo"
+                width={80}
+                height={80}
+                className="w-20 h-20 object-contain scale-[2.8] translate-y-1"
+              />
 
-</Link>
+            </Link>
             {/* Search Bar */}
             <form action="/search" method="GET" className="relative">
               <input
@@ -63,26 +63,23 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="flex items-center space-x-6">
-            <Link href="/" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              Home
-            </Link>
-            <Link href="/about" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              About
-            </Link>
-            <Link href="/products" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              Products
-            </Link>
-            <Link href="/shop" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              Shop
-            </Link>
-            <Link href="/contact" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              Contact
-            </Link>
-            <Link href="/account" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-              Account
-            </Link>
-            <LoginIcon />
-            <CartIcon />
+              <Link href="/" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
+                Home
+              </Link>
+              <Link href="/about" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
+                About
+              </Link>
+              <Link href="/products" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
+                Products
+              </Link>
+              <Link href="/contact" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
+                Contact
+              </Link>
+              <Link href="/account" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
+                Account
+              </Link>
+              <LoginIcon />
+              <CartIcon />
             </div>
           </div>
 
@@ -131,9 +128,6 @@ export default function Navbar() {
                 <Link href="/products" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
                   Products
                 </Link>
-                <Link href="/shop" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
-                  Shop
-                </Link>
                 <Link href="/contact" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
                   Contact
                 </Link>
@@ -141,7 +135,7 @@ export default function Navbar() {
                   Account
                 </Link>
                 <div className="flex items-center space-x-3 md:space-x-4 pt-3 md:pt-4 border-t border-gray-200">
-                  <button 
+                  <button
                     onClick={() => {
                       setIsLoginModalOpen(true)
                       setIsMenuOpen(false)
@@ -151,7 +145,7 @@ export default function Navbar() {
                     <User className="w-5 h-5 text-gray-900" />
                     <span className="text-gray-900 font-medium text-sm">Login</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       setIsCartOpen(true)
                       setIsMenuOpen(false)

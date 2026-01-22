@@ -4,25 +4,25 @@ import Order from '@/lib/models/Order'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
-    
-    const order = await Order.findById(params.id)
-    
+    const { id } = await params
+    const order = await Order.findById(id)
+
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       data: order
     })
-    
+
   } catch (error) {
     console.error('Error fetching order:', error)
     return NextResponse.json(
@@ -34,13 +34,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
-    
+    const { id } = await params
+
     const updateData = await request.json()
-    
+
     // Validate allowed fields for update
     const allowedFields = [
       'orderStatus',
@@ -49,14 +50,14 @@ export async function PUT(
       'trackingNumber',
       'notes'
     ]
-    
+
     const updateFields: any = {}
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
         updateFields[field] = updateData[field]
       }
     }
-    
+
     // Validate order status
     if (updateFields.orderStatus) {
       const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
@@ -67,7 +68,7 @@ export async function PUT(
         )
       }
     }
-    
+
     // Validate payment status
     if (updateFields.paymentStatus) {
       const validStatuses = ['pending', 'completed', 'failed', 'refunded']
@@ -78,7 +79,7 @@ export async function PUT(
         )
       }
     }
-    
+
     // Validate shipping status
     if (updateFields.shippingStatus) {
       const validStatuses = ['pending', 'shipped', 'delivered']
@@ -89,26 +90,26 @@ export async function PUT(
         )
       }
     }
-    
+
     const updatedOrder = await Order.findByIdAndUpdate(
-      params.id,
+      id,
       updateFields,
       { new: true, runValidators: true }
     )
-    
+
     if (!updatedOrder) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       data: updatedOrder,
       message: 'Order updated successfully'
     })
-    
+
   } catch (error) {
     console.error('Error updating order:', error)
     return NextResponse.json(
@@ -120,19 +121,19 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
-    
-    const order = await Order.findById(params.id)
+    const { id } = await params
+    const order = await Order.findById(id)
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       )
     }
-    
+
     // Only allow deletion of pending orders
     if (order.orderStatus !== 'pending') {
       return NextResponse.json(
@@ -140,14 +141,14 @@ export async function DELETE(
         { status: 400 }
       )
     }
-    
-    await Order.findByIdAndDelete(params.id)
-    
+
+    await Order.findByIdAndDelete(id)
+
     return NextResponse.json({
       success: true,
       message: 'Order deleted successfully'
     })
-    
+
   } catch (error) {
     console.error('Error deleting order:', error)
     return NextResponse.json(

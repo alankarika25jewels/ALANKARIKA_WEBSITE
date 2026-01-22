@@ -8,22 +8,22 @@ export async function GET(
 ) {
   try {
     await connectDB()
-    
+
     const { id } = await params
     const product = await Product.findById(id)
-    
+
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
         { status: 404 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       data: product
     })
-    
+
   } catch (error) {
     console.error('Error fetching product:', error)
     return NextResponse.json(
@@ -39,21 +39,23 @@ export async function PUT(
 ) {
   try {
     await connectDB()
-    
+
     const { id } = await params
-    
+
     const formData = await request.formData()
-    
+
     // Extract text fields
     const name = formData.get('name') as string
     const description = formData.get('description') as string
-    const keyFeatures = (formData.get('keyFeatures') as string).split(',').map(f => f.trim()).filter(f => f)
+    const keyFeaturesRaw = formData.get('keyFeatures') as string
+    const keyFeatures = keyFeaturesRaw ? keyFeaturesRaw.split(',').map(f => f.trim()).filter(f => f) : []
     const price = parseFloat(formData.get('price') as string)
     const originalPrice = formData.get('originalPrice') ? parseFloat(formData.get('originalPrice') as string) : undefined
     const sizeConstraints = formData.get('sizeConstraints') as string
     const quantity = parseInt(formData.get('quantity') as string)
     const category = formData.get('category') as string
-    
+    const subCategory = formData.get('subCategory') as string || undefined
+
     // Validate required fields
     if (!name || !description || !keyFeatures.length || !price || !quantity || !category) {
       return NextResponse.json(
@@ -61,56 +63,56 @@ export async function PUT(
         { status: 400 }
       )
     }
-    
+
     // Handle new image uploads
     const newImageFiles = formData.getAll('newImages') as File[]
-    const uploadedImages = []
-    
+    const uploadedImages: any[] = []
+
     for (const imageFile of newImageFiles) {
       if (imageFile.size > 0) {
         const bytes = await imageFile.arrayBuffer()
         const buffer = Buffer.from(bytes)
-        
+
         const { uploadToCloudinary, getCloudinaryFolder } = await import('@/lib/cloudinary')
         const folder = getCloudinaryFolder('products')
         const result = await uploadToCloudinary(buffer, folder, 'image')
         uploadedImages.push(result)
       }
     }
-    
+
     // Handle new video uploads
     const newVideoFiles = formData.getAll('newVideos') as File[]
-    const uploadedVideos = []
-    
+    const uploadedVideos: any[] = []
+
     for (const videoFile of newVideoFiles) {
       if (videoFile.size > 0) {
         const bytes = await videoFile.arrayBuffer()
         const buffer = Buffer.from(bytes)
-        
+
         const { uploadToCloudinary, getCloudinaryFolder } = await import('@/lib/cloudinary')
         const folder = getCloudinaryFolder('products')
         const result = await uploadToCloudinary(buffer, folder, 'video')
         uploadedVideos.push(result)
       }
     }
-    
+
     // Handle deletions
     const imagesToDelete = formData.get('imagesToDelete') ? JSON.parse(formData.get('imagesToDelete') as string) : []
     const videosToDelete = formData.get('videosToDelete') ? JSON.parse(formData.get('videosToDelete') as string) : []
-    
+
     // Delete files from Cloudinary
     if (imagesToDelete.length > 0 || videosToDelete.length > 0) {
       const { deleteFromCloudinary } = await import('@/lib/cloudinary')
-      
+
       for (const publicId of imagesToDelete) {
         await deleteFromCloudinary(publicId, 'image')
       }
-      
+
       for (const publicId of videosToDelete) {
         await deleteFromCloudinary(publicId, 'video')
       }
     }
-    
+
     // Get existing product to merge with new data
     const existingProduct = await Product.findById(id)
     if (!existingProduct) {
@@ -119,11 +121,11 @@ export async function PUT(
         { status: 404 }
       )
     }
-    
+
     // Merge existing images/videos with new ones, excluding deleted ones
     const existingImages = existingProduct.images.filter((img: any) => !imagesToDelete.includes(img.publicId))
     const existingVideos = existingProduct.videos.filter((vid: any) => !videosToDelete.includes(vid.publicId))
-    
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -135,18 +137,20 @@ export async function PUT(
         sizeConstraints: sizeConstraints || undefined,
         quantity,
         category,
+        subCategory,
+        isOutOfStock: formData.get('isOutOfStock') === 'true',
         images: [...existingImages, ...uploadedImages],
         videos: [...existingVideos, ...uploadedVideos]
       },
       { new: true, runValidators: true }
     )
-    
+
     return NextResponse.json({
       success: true,
       data: updatedProduct,
       message: 'Product updated successfully'
     })
-    
+
   } catch (error) {
     console.error('Error updating product:', error)
     return NextResponse.json(
@@ -162,7 +166,7 @@ export async function DELETE(
 ) {
   try {
     await connectDB()
-    
+
     const { id } = await params
     const product = await Product.findById(id)
     if (!product) {
@@ -171,26 +175,26 @@ export async function DELETE(
         { status: 404 }
       )
     }
-    
+
     // Delete all images and videos from Cloudinary
     const { deleteFromCloudinary } = await import('@/lib/cloudinary')
-    
+
     for (const image of product.images) {
       await deleteFromCloudinary(image.publicId, 'image')
     }
-    
+
     for (const video of product.videos) {
       await deleteFromCloudinary(video.publicId, 'video')
     }
-    
+
     // Delete the product from MongoDB
     await Product.findByIdAndDelete(id)
-    
+
     return NextResponse.json({
       success: true,
       message: 'Product deleted successfully'
     })
-    
+
   } catch (error) {
     console.error('Error deleting product:', error)
     return NextResponse.json(
