@@ -31,7 +31,7 @@ export default function CheckoutPage() {
     state: '',
     zipCode: '',
     country: 'India',
-    paymentMethod: 'card'
+    paymentMethod: 'stripe'
   })
 
   // Authentication states
@@ -46,6 +46,7 @@ export default function CheckoutPage() {
     lastName: ''
   })
   const [authLoading, setAuthLoading] = useState(false)
+  const [stripeReady, setStripeReady] = useState(false)
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -74,6 +75,25 @@ export default function CheckoutPage() {
 
     checkAuth()
   }, [])
+
+  // Check whether Stripe keys are configured
+  useEffect(() => {
+    fetch('/api/stripe/create-checkout-session')
+      .then((res) => res.json())
+      .then((data) => setStripeReady(Boolean(data.configured)))
+      .catch(() => setStripeReady(false))
+  }, [])
+
+  // Notify if user canceled Stripe checkout
+  useEffect(() => {
+    if (searchParams.get('canceled') === '1') {
+      toast({
+        title: "Payment Canceled",
+        description: "Your Stripe checkout was canceled. You can try again when ready.",
+        variant: "destructive",
+      })
+    }
+  }, [searchParams])
 
   // Handle direct product purchase from Buy Now button
   useEffect(() => {
@@ -249,6 +269,8 @@ export default function CheckoutPage() {
     }
 
     try {
+      const selectedMethod = formData.paymentMethod === 'card' ? 'stripe' : formData.paymentMethod
+
       // Prepare order data
       const orderData: CreateOrderData = {
         customerDetails: {
@@ -273,27 +295,54 @@ export default function CheckoutPage() {
         subtotal: state.total,
         tax: state.total * 0.18,
         total: state.total + (state.total * 0.18),
-        paymentMethod: formData.paymentMethod as 'card' | 'upi' | 'cod'
+        paymentMethod: selectedMethod as 'card' | 'upi' | 'cod' | 'stripe'
       }
-
-      console.log('Submitting order data:', JSON.stringify(orderData, null, 2))
-      console.log('Cart items:', state.items)
-      console.log('Customer details:', orderData.customerDetails)
 
       // Create order in database
       const order = await createOrder(orderData)
 
-      console.log('Order created successfully:', order)
+      // Stripe / card payments redirect to Stripe Checkout
+      if (selectedMethod === 'stripe' || selectedMethod === 'card') {
+        if (!stripeReady) {
+          toast({
+            title: "Stripe Not Configured",
+            description: "Add your Stripe API keys in .env.local to enable card payments. Your order was saved as pending.",
+            variant: "destructive",
+          })
+          setIsProcessing(false)
+          return
+        }
 
-      // Show success message
+        const stripeRes = await fetch('/api/stripe/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: order._id }),
+        })
+        const stripeData = await stripeRes.json()
+
+        if (!stripeRes.ok || !stripeData.url) {
+          toast({
+            title: "Payment Setup Failed",
+            description: stripeData.error || "Could not start Stripe checkout. Please try again.",
+            variant: "destructive",
+          })
+          setIsProcessing(false)
+          return
+        }
+
+        clearCart()
+        window.location.href = stripeData.url
+        return
+      }
+
+      // COD / UPI (non-Stripe) flow
       toast({
         title: "Order Placed Successfully!",
         description: `Order #${order.orderNumber} has been created.`,
       })
 
-      // Clear cart and redirect to success page
       clearCart()
-      router.push('/checkout/success')
+      router.push(`/checkout/success?order=${order.orderNumber}`)
     } catch (error) {
       console.error('Error placing order:', error)
       toast({
@@ -596,18 +645,23 @@ export default function CheckoutPage() {
                         <div className="flex items-center space-x-3">
                           <input
                             type="radio"
-                            id="card"
+                            id="stripe"
                             name="paymentMethod"
-                            value="card"
-                            checked={formData.paymentMethod === 'card'}
+                            value="stripe"
+                            checked={formData.paymentMethod === 'stripe' || formData.paymentMethod === 'card'}
                             onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
                             className="text-blue-600"
                           />
-                          <Label htmlFor="card" className="flex items-center space-x-2 cursor-pointer">
+                          <Label htmlFor="stripe" className="flex items-center space-x-2 cursor-pointer">
                             <CreditCard className="w-5 h-5" />
-                            <span>Credit/Debit Card</span>
+                            <span>Pay Securely with Stripe (Card)</span>
                           </Label>
                         </div>
+                        <p className="text-xs text-gray-500 mt-2 ml-7">
+                          {stripeReady
+                            ? 'You will be redirected to Stripe Checkout to complete payment.'
+                            : 'Stripe keys not added yet — card checkout will be enabled once you add your API keys.'}
+                        </p>
                       </div>
 
                       <div className="border border-gray-200 rounded-lg p-4">
@@ -640,6 +694,12 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                     </div>
+                    <p className="text-xs text-gray-500 mt-4">
+                      By placing an order you agree to our{' '}
+                      <Link href="/terms" className="underline text-[#8B7355]">Terms & Conditions</Link>,{' '}
+                      <Link href="/privacy" className="underline text-[#8B7355]">Privacy Policy</Link>, and{' '}
+                      <Link href="/return-policy" className="underline text-[#8B7355]">Refund Policy</Link>.
+                    </p>
                   </div>
                 )}
 

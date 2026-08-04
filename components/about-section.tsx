@@ -4,7 +4,7 @@ import { Award, Users, Gem, Shield } from "lucide-react"
 
 export default function AboutSection() {
   const stats = [
-    { icon: Award, label: "Years of Excellence", value: "25+" },
+    { icon: Award, label: "Established", value: "2025" },
     { icon: Users, label: "Happy Customers", value: "50K+" },
     { icon: Gem, label: "Unique Designs", value: "1000+" },
     { icon: Shield, label: "Lifetime Warranty", value: "100%" },
@@ -17,10 +17,10 @@ export default function AboutSection() {
           {/* Left content */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-4xl font-light text-gray-900 mb-6">Crafting Timeless Beauty Since 1998</h2>
+              <h2 className="text-4xl font-light text-gray-900 mb-6">Crafting Timeless Beauty Since 2025</h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                At Shofy, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
-                your precious moments, and your personal style. For over two decades, we've been dedicated to creating
+                At Alankarika, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
+                your precious moments, and your personal style. Since 2025, we've been dedicated to creating
                 exquisite pieces that celebrate life's most beautiful moments.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">

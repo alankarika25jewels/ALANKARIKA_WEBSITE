@@ -26,7 +26,7 @@ export default function Navbar() {
           <div className="lg:hidden flex items-center">
             <Link href="/" className="flex items-center space-x-0.5">
               <Image
-                src="/logoalan-removebg-preview.png"
+                src="/logo/alankarika-newlogo-removebg-preview.png"
                 alt="Alankarika Logo"
                 width={60}
                 height={60}
@@ -40,7 +40,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-0.5 flex-shrink-0">
               <Image
-                src="/logoalan-removebg-preview.png"
+                src="/logo/alankarika-newlogo-removebg-preview.png"
                 alt="Alankarika Logo"
                 width={80}
                 height={80}

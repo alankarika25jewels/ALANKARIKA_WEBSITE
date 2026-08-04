@@ -106,7 +106,7 @@ const OrderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['card', 'upi', 'cod']
+    enum: ['card', 'upi', 'cod', 'stripe']
   },
   paymentStatus: {
     type: String,
@@ -127,6 +127,14 @@ const OrderSchema = new mongoose.Schema({
     default: 'pending'
   },
   trackingNumber: {
+    type: String,
+    trim: true
+  },
+  stripeSessionId: {
+    type: String,
+    trim: true
+  },
+  stripePaymentIntentId: {
     type: String,
     trim: true
   },

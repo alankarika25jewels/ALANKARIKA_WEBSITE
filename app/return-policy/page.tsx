@@ -11,7 +11,7 @@ export default function ReturnPolicyPage() {
             <div className="h-24 bg-[#8B7355]"></div>
 
             <main className="max-w-4xl mx-auto px-4 py-16">
-                <h1 className="text-4xl font-light text-gray-900 mb-8 border-b pb-4 italic">7 Days Return Policy</h1>
+                <h1 className="text-4xl font-light text-gray-900 mb-8 border-b pb-4 italic">Refund &amp; Return Policy</h1>
 
                 <div className="prose prose-brown max-w-none text-gray-700 space-y-8">
                     <section>

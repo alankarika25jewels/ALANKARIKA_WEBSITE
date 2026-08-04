@@ -169,8 +169,8 @@ export default function Home() {
               <div>
                 <h2 className="font-light-300 text-3xl md:text-4xl lg:text-5xl text-gray-900 mb-4 md:mb-6 animate-fade-in-up text-center lg:text-left" style={{ animationDelay: '0.4s' }}>About Alankarika</h2>
                 <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-4 md:mb-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                  At Rose Jewels, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
-                  your precious moments, and your personal style. For over two decades, we've been dedicated to creating
+                  At Alankarika, we believe that jewelry is more than just an accessory—it's a reflection of your unique story,
+                  your precious moments, and your personal style. Since 2025, we've been dedicated to creating
                   exquisite pieces that celebrate life's most beautiful moments.
                 </p>
                 <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6 md:mb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
@@ -190,7 +190,7 @@ export default function Home() {
 
             <div className="relative animate-fade-in-up text-center lg:text-left" style={{ animationDelay: '0.3s' }}>
               <Image
-                src="/logoalan-removebg-preview.png"
+                src="/logo/alankarika-newlogo.jpeg"
                 alt="Alankarika Logo"
                 width={800}
                 height={700}

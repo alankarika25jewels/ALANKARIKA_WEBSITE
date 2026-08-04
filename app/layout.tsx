@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: 'v0 App',
   description: 'Created with v0',
   generator: 'v0.dev',
+  icons: {
+    icon: [
+      { url: '/logo/alankarika-newlogo.jpeg', type: 'image/jpeg' },
+    ],
+    apple: '/logo/alankarika-newlogo.jpeg',
+    shortcut: '/logo/alankarika-newlogo.jpeg',
+  },
 }
 
 export default function RootLayout({

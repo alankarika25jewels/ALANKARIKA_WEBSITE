@@ -30,11 +30,13 @@ export interface Order {
   subtotal: number
   tax: number
   total: number
-  paymentMethod: 'card' | 'upi' | 'cod'
+  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe'
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded'
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   shippingStatus: 'pending' | 'shipped' | 'delivered'
   trackingNumber?: string
+  stripeSessionId?: string
+  stripePaymentIntentId?: string
   notes?: string
   createdAt: string
   updatedAt: string
@@ -47,7 +49,7 @@ export interface CreateOrderData {
   subtotal: number
   tax: number
   total: number
-  paymentMethod: 'card' | 'upi' | 'cod'
+  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe'
   notes?: string
 }
 

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Navbar from "@/components/navbar"
+import Footer from "@/components/footer"
 import {
   Clock,
   Users,
@@ -35,7 +36,7 @@ export default function AboutPage() {
           <div className="text-center text-white">
             <h1 className="text-6xl lg:text-7xl font-light mb-6">About Alankarika</h1>
             <p className="text-2xl lg:text-3xl max-w-3xl mx-auto">
-              Crafting timeless elegance since 1998
+              Crafting timeless elegance since 2025
             </p>
           </div>
         </div>
@@ -51,7 +52,7 @@ export default function AboutPage() {
                 A Legacy of Craftsmanship
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Founded in 1998, Alankarika began as a small family workshop with a simple mission:
+                Founded in 2025, Alankarika began as a small family workshop with a simple mission:
                 to create jewelry that tells stories. What started with a single artisan crafting pieces
                 by hand has grown into a beloved brand, but our commitment to quality and personal touch
                 remains unchanged.
@@ -64,7 +65,7 @@ export default function AboutPage() {
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-rose-600" />
-                  <span className="text-gray-600">25+ Years</span>
+                  <span className="text-gray-600">Est. 2025</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Users className="w-5 h-5 text-rose-600" />
@@ -142,71 +143,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-900 mb-4">Meet Our Team</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              The passionate artisans and designers behind every piece
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <Image
-                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-                  alt="Sarah Johnson"
-                  width={200}
-                  height={200}
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                />
-                <h3 className="text-xl font-semibold mb-2">Sarah Johnson</h3>
-                <p className="text-rose-600 mb-3">Lead Designer</p>
-                <p className="text-gray-600 text-sm">
-                  With 15 years of experience, Sarah brings creativity and innovation to every design.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <Image
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-                  alt="Michael Chen"
-                  width={200}
-                  height={200}
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                />
-                <h3 className="text-xl font-semibold mb-2">Michael Chen</h3>
-                <p className="text-rose-600 mb-3">Master Craftsman</p>
-                <p className="text-gray-600 text-sm">
-                  Michael's skilled hands bring our designs to life with precision and artistry.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <Image
-                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-                  alt="Emma Rodriguez"
-                  width={200}
-                  height={200}
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                />
-                <h3 className="text-xl font-semibold mb-2">Emma Rodriguez</h3>
-                <p className="text-rose-600 mb-3">Quality Specialist</p>
-                <p className="text-gray-600 text-sm">
-                  Emma ensures every piece meets our exacting standards before reaching our customers.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Contact Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -235,7 +171,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Call Us</h3>
-                    <p className="text-gray-600">9076055755</p>
+                    <p className="text-gray-600">+91 9076055755</p>
                   </div>
                 </div>
 
@@ -253,11 +189,11 @@ export default function AboutPage() {
 
             <div className="relative">
               <Image
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Our Studio"
+                src="/jewelry-craftsman.jpg"
+                alt="Craftsperson working on jewelry"
                 width={600}
                 height={400}
-                className="rounded-2xl shadow-lg"
+                className="rounded-2xl shadow-lg object-cover w-full h-[400px]"
               />
             </div>
           </div>
@@ -265,24 +201,26 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-rose-600">
+      <section className="py-20 bg-[#8B7355]">
         <div className="max-w-4xl mx-auto text-center px-4 lg:px-8">
           <h2 className="text-4xl font-light text-white mb-6">
             Ready to Find Your Perfect Piece?
           </h2>
-          <p className="text-xl text-rose-100 mb-8">
+          <p className="text-xl text-[#F5EEDC] mb-8">
             Explore our collection and discover jewelry that speaks to your soul
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild>
               <Link href="/products">Shop Collection</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-rose-600" asChild>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#8B7355]" asChild>
               <Link href="/contact">Contact Us</Link>
             </Button>
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   )
 } 
