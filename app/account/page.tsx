@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { useOrders } from "@/hooks/useOrders"
 import { Order } from "@/hooks/useOrders"
+import PhoneInput from "@/components/phone-input"
 
 export default function AccountPage() {
   const router = useRouter()
@@ -57,34 +58,35 @@ export default function AccountPage() {
         })
         if (response.ok) {
           const data = await response.json()
-          if (data.success) {
+          if (data.success || data._id) {
             setIsAuthenticated(true)
-            setUser(data.data)
+            const profile = data.data || data
+            setUser(profile)
             setProfileData({
-              firstName: data.data.firstName || "",
-              lastName: data.data.lastName || "",
-              email: data.data.email || "",
-              phone: data.data.phone || "",
-              address: data.data.address?.street || "",
-              city: data.data.address?.city || "",
-              state: data.data.address?.state || "",
-              zipCode: data.data.address?.zipCode || ""
+              firstName: profile.firstName || "",
+              lastName: profile.lastName || "",
+              email: profile.email || "",
+              phone: profile.phone || "",
+              address: profile.address?.street || profile.address?.address || "",
+              city: profile.address?.city || "",
+              state: profile.address?.state || "",
+              zipCode: profile.address?.zipCode || ""
             })
             
             // Fetch user orders
-            await fetchUserOrders(data.data._id)
+            await fetchUserOrders(profile._id)
           }
         } else {
           // Redirect to login if not authenticated
-          router.push('/checkout')
+          router.push('/')
           toast({
-            title: "Authentication Required",
-            description: "Please log in to view your account",
+            title: "Please log in",
+            description: "Log in to view your account and orders.",
             variant: "destructive",
           })
         }
       } catch (error) {
-        router.push('/checkout')
+        router.push('/')
         toast({
           title: "Authentication Error",
           description: "Please log in to continue",
@@ -347,13 +349,14 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      disabled={!isEditing}
-                      className="mt-2"
-                    />
+                    <div className="mt-2">
+                      <PhoneInput
+                        id="phone"
+                        value={profileData.phone}
+                        onChange={(full) => setProfileData({ ...profileData, phone: full })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="address">Address</Label>

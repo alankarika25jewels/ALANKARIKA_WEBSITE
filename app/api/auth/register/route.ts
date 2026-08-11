@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
+import { setAuthCookie, signAuthToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Registration API called')
     const { email, password, firstName, lastName, phone } = await request.json()
-    console.log('Registration attempt for:', email)
 
-    // Validate input
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { success: false, error: 'All required fields must be provided' },
@@ -17,7 +15,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -26,7 +23,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate password strength
     if (password.length < 6) {
       return NextResponse.json(
         { success: false, error: 'Password must be at least 6 characters long' },
@@ -36,7 +32,6 @@ export async function POST(request: NextRequest) {
 
     await connectDB()
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return NextResponse.json(
@@ -45,22 +40,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const saltRounds = 12
-    const hashedPassword = await bcrypt.hash(password, saltRounds)
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
     const user = new User({
       email,
       password: hashedPassword,
       firstName,
       lastName,
-      phone: phone || undefined
+      phone: phone || undefined,
     })
 
     await user.save()
 
-    // Return user data (without password)
     const userResponse = {
       _id: user._id.toString(),
       email: user.email,
@@ -69,19 +60,26 @@ export async function POST(request: NextRequest) {
       fullName: user.fullName,
       phone: user.phone,
       role: user.role,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      name: `${user.firstName} ${user.lastName}`.trim(),
     }
 
-    console.log('Registration successful for:', email)
-    return NextResponse.json(
-      { 
+    const token = signAuthToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    })
+
+    const response = NextResponse.json(
+      {
         success: true,
         message: 'User created successfully',
-        data: userResponse
+        data: userResponse,
       },
       { status: 201 }
     )
-
+    setAuthCookie(response, token)
+    return response
   } catch (error) {
     console.error('Registration error:', error)
     return NextResponse.json(

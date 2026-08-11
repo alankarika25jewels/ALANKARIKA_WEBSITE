@@ -1,26 +1,83 @@
 "use client"
 
-import { useCart } from "@/contexts/cart-context"
+import { useCart, CartItem } from "@/contexts/cart-context"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 
-import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle, User, Lock, Mail } from "lucide-react"
+import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle, User, Lock, Mail, Gift } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useOrders, CreateOrderData } from "@/hooks/useOrders"
 import { toast } from "@/hooks/use-toast"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
+import PhoneInput from "@/components/phone-input"
+import { clearBuyNowItem, computeShippingFee, loadBuyNowItem } from "@/lib/buy-now"
+import type { StoreSettings } from "@/lib/store-settings"
+import { DEFAULT_SETTINGS } from "@/lib/store-settings"
+
+/** Reliably load Razorpay checkout.js (handles already-injected script tags). */
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(false)
+      return
+    }
+
+    if (typeof window.Razorpay === 'function') {
+      resolve(true)
+      return
+    }
+
+    const SRC = 'https://checkout.razorpay.com/v1/checkout.js'
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SRC}"]`)
+
+    const waitForRazorpay = (attemptsLeft: number) => {
+      if (typeof window.Razorpay === 'function') {
+        resolve(true)
+        return
+      }
+      if (attemptsLeft <= 0) {
+        resolve(false)
+        return
+      }
+      setTimeout(() => waitForRazorpay(attemptsLeft - 1), 100)
+    }
+
+    if (existing) {
+      waitForRazorpay(50)
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = SRC
+    script.async = true
+    script.onload = () => waitForRazorpay(20)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
 
 export default function CheckoutPage() {
-  const { state, clearCart, addItem, updateQuantity } = useCart()
+  const { state, clearCart } = useCart()
+  const { user, isAuthenticated, requireAuth, refreshUser } = useAuth()
   const { createOrder } = useOrders()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const isBuyNow = searchParams.get('mode') === 'buynow'
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null)
+  const [buyNowReady, setBuyNowReady] = useState(!isBuyNow)
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
+  const openingRazorpay = useRef(false)
+  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
+  const [isGift, setIsGift] = useState(false)
+  const [giftMessage, setGiftMessage] = useState('')
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -31,11 +88,10 @@ export default function CheckoutPage() {
     state: '',
     zipCode: '',
     country: 'India',
-    paymentMethod: 'stripe'
+    paymentMethod: 'razorpay'
   })
 
-  // Authentication states
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  // Authentication modal (fallback if not logged in)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isLogin, setIsLogin] = useState(true)
   const [authData, setAuthData] = useState({
@@ -43,48 +99,91 @@ export default function CheckoutPage() {
     password: '',
     confirmPassword: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    phone: '',
   })
   const [authLoading, setAuthLoading] = useState(false)
   const [stripeReady, setStripeReady] = useState(false)
+  const [razorpayReady, setRazorpayReady] = useState(false)
 
-  // Check authentication status on component mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        })
-        if (response.ok) {
-          const userData = await response.json()
-          setIsAuthenticated(true)
-          setFormData(prev => ({
-            ...prev,
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: userData.email || ''
-          }))
-        } else {
-          setShowAuthModal(true)
-        }
-      } catch (error) {
-        // User is not authenticated, show auth modal
-        setShowAuthModal(true)
-      }
+    if (!isAuthenticated) {
+      setShowAuthModal(true)
+    } else {
+      setShowAuthModal(false)
+      setFormData(prev => ({
+        ...prev,
+        firstName: user?.firstName || prev.firstName,
+        lastName: user?.lastName || prev.lastName,
+        email: user?.email || prev.email,
+        phone: user?.phone || prev.phone,
+      }))
     }
+  }, [isAuthenticated, user])
 
-    checkAuth()
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data) setSettings(data.data)
+      })
+      .catch(() => {})
   }, [])
 
-  // Check whether Stripe keys are configured
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = sessionStorage.getItem('cartGift')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        setIsGift(Boolean(parsed.isGift))
+        setGiftMessage(parsed.giftMessage || '')
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    sessionStorage.setItem('cartGift', JSON.stringify({ isGift, giftMessage }))
+  }, [isGift, giftMessage])
+
+  // Buy Now: load only that item (do not merge into cart)
+  useEffect(() => {
+    if (!isBuyNow) {
+      setBuyNowReady(true)
+      return
+    }
+    const item = loadBuyNowItem()
+    if (!item) {
+      toast({
+        title: "No product selected",
+        description: "Please choose a product again.",
+        variant: "destructive",
+      })
+      router.push('/products')
+      return
+    }
+    setBuyNowItem(item)
+    setBuyNowReady(true)
+  }, [isBuyNow, router])
+
+  // Preload Razorpay script + check keys (localhost is fine — no live domain needed)
   useEffect(() => {
     fetch('/api/stripe/create-checkout-session')
       .then((res) => res.json())
       .then((data) => setStripeReady(Boolean(data.configured)))
       .catch(() => setStripeReady(false))
+
+    fetch('/api/create-order')
+      .then((res) => res.json())
+      .then((data) => setRazorpayReady(Boolean(data.configured)))
+      .catch(() => setRazorpayReady(false))
+
+    loadRazorpayScript()
   }, [])
 
-  // Notify if user canceled Stripe checkout
   useEffect(() => {
     if (searchParams.get('canceled') === '1') {
       toast({
@@ -95,53 +194,208 @@ export default function CheckoutPage() {
     }
   }, [searchParams])
 
-  // Handle direct product purchase from Buy Now button
-  useEffect(() => {
-    const productId = searchParams.get('product')
-    const quantity = parseInt(searchParams.get('quantity') || '1')
+  const checkoutItems = useMemo(() => {
+    if (isBuyNow && buyNowItem) return [buyNowItem]
+    return state.items
+  }, [isBuyNow, buyNowItem, state.items])
 
-    if (productId && state.items.length === 0) {
-      // Fetch product details and add to cart
-      const fetchAndAddProduct = async () => {
-        try {
-          const response = await fetch(`/api/products/${productId}`)
-          const data = await response.json()
+  const subtotal = useMemo(
+    () => checkoutItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [checkoutItems]
+  )
+  const itemCount = useMemo(
+    () => checkoutItems.reduce((sum, item) => sum + item.quantity, 0),
+    [checkoutItems]
+  )
+  const shipping = useMemo(
+    () => computeShippingFee(subtotal, settings.shippingFee, settings.freeShippingThreshold),
+    [subtotal, settings.shippingFee, settings.freeShippingThreshold]
+  )
+  const giftFee = isGift && settings.giftEnabled ? settings.giftFee : 0
+  const tax = subtotal * (settings.taxRate || 0.18)
+  const total = subtotal + shipping + giftFee + tax
 
-          if (data.success && data.data) {
-            const product = data.data
-            addItem({
-              id: product._id,
-              name: product.name,
-              price: product.price,
-              originalPrice: product.originalPrice,
-              image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-              category: product.category,
-              brand: ""
-            })
+  const openRazorpayCheckout = async (order: { _id: string; orderNumber: string; total: number }) => {
+    if (openingRazorpay.current) return false
+    openingRazorpay.current = true
 
-            // Set the quantity if it's not 1
-            if (quantity > 1) {
-              setTimeout(() => {
-                updateQuantity(product._id, quantity)
-              }, 100)
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch product:', error)
-          router.push('/cart')
-        }
+    try {
+      const scriptOk = await loadRazorpayScript()
+      if (!scriptOk || typeof window.Razorpay !== 'function') {
+        toast({
+          title: "Payment Unavailable",
+          description: "Could not load Razorpay. Disable ad-block for localhost, then refresh.",
+          variant: "destructive",
+        })
+        return false
       }
 
-      fetchAndAddProduct()
-    }
-  }, [searchParams, state.items.length, addItem, router])
+      const payableTotal = Number(order.total)
+      const amountInPaise = Math.round(payableTotal * 100)
 
-  // Handle empty cart redirect on client side
+      if (!Number.isFinite(amountInPaise) || amountInPaise < 100) {
+        toast({
+          title: "Invalid Amount",
+          description: `Cannot charge ₹${payableTotal}. Minimum is ₹1.`,
+          variant: "destructive",
+        })
+        return false
+      }
+
+      // Create Razorpay order first, then open popup immediately
+      const createRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: amountInPaise,
+          currency: 'INR',
+          receipt: String(order.orderNumber || `rcpt_${Date.now()}`).slice(0, 40),
+          orderId: order._id,
+        }),
+      })
+      const createData = await createRes.json()
+
+      if (!createRes.ok || !createData.order_id || !createData.key) {
+        toast({
+          title: "Payment Setup Failed",
+          description: createData.error || "Could not create Razorpay order. Restart npm run dev.",
+          variant: "destructive",
+        })
+        setRazorpayReady(false)
+        return false
+      }
+
+      setRazorpayReady(true)
+
+      return await new Promise<boolean>((resolve) => {
+        let settled = false
+        const finish = (value: boolean) => {
+          if (settled) return
+          settled = true
+          resolve(value)
+        }
+
+        const options = {
+          key: createData.key as string,
+          amount: Number(createData.amount),
+          currency: (createData.currency as string) || 'INR',
+          name: 'The Alankarika Jewels',
+          description: `Order #${order.orderNumber}`,
+          image: '/logo/alankarika-newlogo.jpeg',
+          order_id: createData.order_id as string,
+          prefill: {
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email,
+            contact: formData.phone.replace(/\s+/g, ''),
+          },
+          notes: {
+            orderId: String(order._id),
+            orderNumber: String(order.orderNumber),
+          },
+          theme: { color: '#8B7355' },
+          handler: async (response: {
+            razorpay_payment_id: string
+            razorpay_order_id: string
+            razorpay_signature: string
+          }) => {
+            try {
+              const verifyRes = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...response,
+                  orderId: order._id,
+                }),
+              })
+              const verifyData = await verifyRes.json()
+
+              if (!verifyRes.ok || !verifyData.success) {
+                toast({
+                  title: "Payment Verification Failed",
+                  description: verifyData.error || "Payment could not be verified.",
+                  variant: "destructive",
+                })
+                finish(false)
+                return
+              }
+
+              toast({
+                title: "Payment Successful!",
+                description: `Order #${order.orderNumber} has been paid.`,
+              })
+              if (isBuyNow) {
+                clearBuyNowItem()
+              } else {
+                clearCart()
+              }
+              sessionStorage.removeItem('cartGift')
+              finish(true)
+              router.push(`/checkout/success?order=${order.orderNumber}`)
+            } catch (error) {
+              console.error('Verify payment error:', error)
+              toast({
+                title: "Verification Error",
+                description: "Payment may have succeeded but verification failed. Contact support.",
+                variant: "destructive",
+              })
+              finish(false)
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              toast({
+                title: "Payment Cancelled",
+                description: "You closed the Razorpay window. Order stays pending until you pay.",
+                variant: "destructive",
+              })
+              finish(false)
+            },
+          },
+        }
+
+        try {
+          const rzp = new window.Razorpay(options)
+          rzp.on('payment.failed', (response) => {
+            toast({
+              title: "Payment Failed",
+              description: response.error?.description || response.error?.reason || "Payment failed. Try again.",
+              variant: "destructive",
+            })
+            finish(false)
+          })
+          // Must call open() to show the card/UPI popup
+          rzp.open()
+        } catch (error) {
+          console.error('Razorpay open error:', error)
+          toast({
+            title: "Could Not Open Payment",
+            description: error instanceof Error ? error.message : "Failed to open Razorpay popup.",
+            variant: "destructive",
+          })
+          finish(false)
+        }
+      })
+    } catch (error) {
+      console.error('openRazorpayCheckout error:', error)
+      toast({
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Something went wrong starting payment.",
+        variant: "destructive",
+      })
+      return false
+    } finally {
+      openingRazorpay.current = false
+    }
+  }
+
+  // Handle empty cart redirect (skip for Buy Now)
   useEffect(() => {
-    if (state.items.length === 0 && !searchParams.get('product')) {
+    if (!buyNowReady) return
+    if (isBuyNow) return
+    if (state.items.length === 0) {
       router.push('/cart')
     }
-  }, [state.items.length, router, searchParams])
+  }, [state.items.length, router, isBuyNow, buyNowReady])
 
   // Authentication functions
   const handleAuth = async (e: React.FormEvent) => {
@@ -155,13 +409,14 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(authData),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setIsAuthenticated(true)
+        await refreshUser()
         setShowAuthModal(false)
         setFormData(prev => ({
           ...prev,
@@ -198,18 +453,13 @@ export default function CheckoutPage() {
     }))
   }
 
-  // Debug form data changes
-  useEffect(() => {
-    console.log('Form data changed:', formData)
-  }, [formData])
-
-  // Show loading state while checking cart
-  if (state.items.length === 0) {
+  // Show loading state while checking cart / buy now
+  if (!buyNowReady || (!isBuyNow && state.items.length === 0) || (isBuyNow && !buyNowItem)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to cart...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B7355] mx-auto mb-4"></div>
+          <p className="text-gray-600">{isBuyNow ? 'Preparing checkout…' : 'Redirecting to cart…'}</p>
         </div>
       </div>
     )
@@ -246,19 +496,14 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handlePlaceOrder = async () => {
+    if (isProcessing) return
     setIsProcessing(true)
 
-    console.log('Form data before submission:', formData)
-    console.log('Current step:', currentStep)
-
-    // Validate form data
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode']
     const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData])
 
     if (missingFields.length > 0) {
-      console.error('Missing required fields:', missingFields)
       toast({
         title: "Missing Information",
         description: `Please fill in: ${missingFields.join(', ')}`,
@@ -269,10 +514,15 @@ export default function CheckoutPage() {
     }
 
     try {
-      const selectedMethod = formData.paymentMethod === 'card' ? 'stripe' : formData.paymentMethod
+      const selectedMethod =
+        formData.paymentMethod === 'card' || formData.paymentMethod === 'upi'
+          ? 'razorpay'
+          : formData.paymentMethod
 
-      // Prepare order data
+      const orderTotal = total
+
       const orderData: CreateOrderData = {
+        userId: user?._id,
         customerDetails: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -284,7 +534,7 @@ export default function CheckoutPage() {
           zipCode: formData.zipCode,
           country: formData.country
         },
-        items: state.items.map(item => ({
+        items: checkoutItems.map(item => ({
           productId: item.id,
           name: item.name,
           price: item.price,
@@ -292,24 +542,52 @@ export default function CheckoutPage() {
           image: item.image,
           category: item.category
         })),
-        subtotal: state.total,
-        tax: state.total * 0.18,
-        total: state.total + (state.total * 0.18),
-        paymentMethod: selectedMethod as 'card' | 'upi' | 'cod' | 'stripe'
+        subtotal,
+        shipping,
+        giftFee,
+        isGift: isGift && settings.giftEnabled,
+        giftMessage: isGift ? giftMessage : '',
+        tax,
+        total: orderTotal,
+        paymentMethod: selectedMethod as 'card' | 'upi' | 'cod' | 'stripe' | 'razorpay'
       }
 
-      // Create order in database
       const order = await createOrder(orderData)
+      const orderId = order._id || (order as { id?: string }).id
 
-      // Stripe / card payments redirect to Stripe Checkout
-      if (selectedMethod === 'stripe' || selectedMethod === 'card') {
+      if (!orderId) {
+        throw new Error('Order was created but no order id was returned')
+      }
+
+      const finishLocalCart = () => {
+        if (isBuyNow) {
+          clearBuyNowItem()
+        } else {
+          clearCart()
+        }
+        sessionStorage.removeItem('cartGift')
+      }
+
+      // Razorpay — popup must open; success page ONLY after real payment
+      if (selectedMethod === 'razorpay') {
+        const paid = await openRazorpayCheckout({
+          _id: String(orderId),
+          orderNumber: order.orderNumber,
+          total: Number(order.total) || orderTotal,
+        })
+
+        // Stay on checkout unless payment succeeded (handler redirects)
+        if (!paid) return
+        return
+      }
+
+      if (selectedMethod === 'stripe') {
         if (!stripeReady) {
           toast({
             title: "Stripe Not Configured",
-            description: "Add your Stripe API keys in .env.local to enable card payments. Your order was saved as pending.",
+            description: "Add Stripe keys in .env.local first.",
             variant: "destructive",
           })
-          setIsProcessing(false)
           return
         }
 
@@ -323,31 +601,37 @@ export default function CheckoutPage() {
         if (!stripeRes.ok || !stripeData.url) {
           toast({
             title: "Payment Setup Failed",
-            description: stripeData.error || "Could not start Stripe checkout. Please try again.",
+            description: stripeData.error || "Could not start Stripe checkout.",
             variant: "destructive",
           })
-          setIsProcessing(false)
           return
         }
 
-        clearCart()
+        finishLocalCart()
         window.location.href = stripeData.url
         return
       }
 
-      // COD / UPI (non-Stripe) flow
-      toast({
-        title: "Order Placed Successfully!",
-        description: `Order #${order.orderNumber} has been created.`,
-      })
+      if (selectedMethod === 'cod') {
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Order #${order.orderNumber} created (Cash on Delivery).`,
+        })
+        finishLocalCart()
+        router.push(`/checkout/success?order=${order.orderNumber}`)
+        return
+      }
 
-      clearCart()
-      router.push(`/checkout/success?order=${order.orderNumber}`)
+      toast({
+        title: "Select a Payment Method",
+        description: "Please choose Razorpay or Cash on Delivery.",
+        variant: "destructive",
+      })
     } catch (error) {
       console.error('Error placing order:', error)
       toast({
         title: "Error Placing Order",
-        description: "There was an error placing your order. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error placing your order.",
         variant: "destructive",
       })
     } finally {
@@ -355,7 +639,10 @@ export default function CheckoutPage() {
     }
   }
 
-  const total = state.total + (state.total * 0.18) // Including tax
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await handlePlaceOrder()
+  }
 
   // Show authentication modal if not authenticated
   if (showAuthModal && !isAuthenticated) {
@@ -406,6 +693,17 @@ export default function CheckoutPage() {
                           onChange={(e) => handleAuthInputChange('lastName', e.target.value)}
                           required={!isLogin}
                           className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="auth-phone">Mobile Number</Label>
+                      <div className="mt-1">
+                        <PhoneInput
+                          id="auth-phone"
+                          value={authData.phone}
+                          onChange={(full) => handleAuthInputChange('phone', full)}
+                          required={!isLogin}
                         />
                       </div>
                     </div>
@@ -487,7 +785,7 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <Link href="/cart" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
+            <Link href="/cart" className="inline-flex items-center text-[#8B7355] hover:text-[#6F5B43] mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Cart
             </Link>
@@ -495,33 +793,43 @@ export default function CheckoutPage() {
           </div>
 
           {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center space-x-4">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${currentStep >= step
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-500'
-                    }`}>
-                    {currentStep > step ? <CheckCircle className="w-6 h-6" /> : step}
+          <div className="mb-10">
+            <div className="flex items-center justify-center max-w-lg mx-auto">
+              {[
+                { n: 1, label: 'Shipping' },
+                { n: 2, label: 'Payment' },
+                { n: 3, label: 'Review' },
+              ].map((step, idx, arr) => (
+                <div key={step.n} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center min-w-[72px]">
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center border-2 text-sm font-semibold transition-colors ${
+                        currentStep > step.n
+                          ? 'bg-[#8B7355] border-[#8B7355] text-white'
+                          : currentStep === step.n
+                            ? 'bg-[#D4AF37] border-[#D4AF37] text-white shadow-md'
+                            : 'bg-[#F5EEDC] border-[#C4A484]/50 text-[#8B7355]'
+                      }`}
+                    >
+                      {currentStep > step.n ? <CheckCircle className="w-5 h-5" /> : step.n}
+                    </div>
+                    <span
+                      className={`mt-2 text-xs sm:text-sm ${
+                        currentStep >= step.n ? 'text-[#8B7355] font-semibold' : 'text-gray-400'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
                   </div>
-                  {step < 3 && (
-                    <div className={`w-16 h-0.5 mx-2 ${currentStep > step ? 'bg-blue-600' : 'bg-gray-300'
-                      }`} />
+                  {idx < arr.length - 1 && (
+                    <div
+                      className={`h-0.5 flex-1 mx-2 mb-6 rounded-full ${
+                        currentStep > step.n ? 'bg-[#8B7355]' : 'bg-[#E8DFD0]'
+                      }`}
+                    />
                   )}
                 </div>
               ))}
-            </div>
-            <div className="flex justify-center mt-4 space-x-16">
-              <span className={`text-sm ${currentStep >= 1 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                Shipping
-              </span>
-              <span className={`text-sm ${currentStep >= 2 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                Payment
-              </span>
-              <span className={`text-sm ${currentStep >= 3 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                Review
-              </span>
             </div>
           </div>
 
@@ -566,11 +874,10 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <Label htmlFor="phone">Phone</Label>
-                        <Input
+                        <PhoneInput
                           id="phone"
                           value={formData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          placeholder="+91 98765 43210"
+                          onChange={(full) => handleInputChange('phone', full)}
                           required
                         />
                       </div>
@@ -620,7 +927,7 @@ export default function CheckoutPage() {
                           id="country"
                           value={formData.country}
                           onChange={(e) => handleInputChange('country', e.target.value)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          className="flex h-10 w-full rounded-md border border-[#E8DFD0] bg-white px-3 py-2 text-sm text-gray-900 ring-offset-background focus:outline-none focus:ring-2 focus:ring-[#C4A484] focus:ring-offset-2"
                           required
                         >
                           <option value="India">India</option>
@@ -641,43 +948,46 @@ export default function CheckoutPage() {
                   <div>
                     <h2 className="text-2xl font-semibold text-gray-900 mb-6">Payment Method</h2>
                     <div className="space-y-4">
-                      <div className="border border-gray-200 rounded-lg p-4">
+                      <div className="border border-[#E8DFD0] rounded-lg p-4 bg-[#FDFBF7]">
                         <div className="flex items-center space-x-3">
                           <input
                             type="radio"
-                            id="stripe"
+                            id="razorpay"
                             name="paymentMethod"
-                            value="stripe"
-                            checked={formData.paymentMethod === 'stripe' || formData.paymentMethod === 'card'}
+                            value="razorpay"
+                            checked={formData.paymentMethod === 'razorpay' || formData.paymentMethod === 'card'}
                             onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                            className="text-blue-600"
+                            className="accent-[#8B7355]"
                           />
-                          <Label htmlFor="stripe" className="flex items-center space-x-2 cursor-pointer">
-                            <CreditCard className="w-5 h-5" />
-                            <span>Pay Securely with Stripe (Card)</span>
+                          <Label htmlFor="razorpay" className="flex items-center space-x-2 cursor-pointer">
+                            <CreditCard className="w-5 h-5 text-[#8B7355]" />
+                            <span>Pay Online with Razorpay (Card / UPI / Wallet)</span>
                           </Label>
                         </div>
                         <p className="text-xs text-gray-500 mt-2 ml-7">
-                          {stripeReady
-                            ? 'You will be redirected to Stripe Checkout to complete payment.'
-                            : 'Stripe keys not added yet — card checkout will be enabled once you add your API keys.'}
+                          Secure payment via Razorpay. You can pay with card, UPI, or wallet when you place the order.
                         </p>
                       </div>
 
-                      <div className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            id="upi"
-                            name="paymentMethod"
-                            value="upi"
-                            checked={formData.paymentMethod === 'upi'}
-                            onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                            className="text-blue-600"
-                          />
-                          <Label htmlFor="upi" className="cursor-pointer">UPI Payment</Label>
+                      {stripeReady && (
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="radio"
+                              id="stripe"
+                              name="paymentMethod"
+                              value="stripe"
+                              checked={formData.paymentMethod === 'stripe'}
+                              onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                              className="accent-[#8B7355]"
+                            />
+                            <Label htmlFor="stripe" className="flex items-center space-x-2 cursor-pointer">
+                              <CreditCard className="w-5 h-5" />
+                              <span>Pay with Stripe</span>
+                            </Label>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center space-x-3">
@@ -688,7 +998,7 @@ export default function CheckoutPage() {
                             value="cod"
                             checked={formData.paymentMethod === 'cod'}
                             onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                            className="text-blue-600"
+                            className="accent-[#8B7355]"
                           />
                           <Label htmlFor="cod" className="cursor-pointer">Cash on Delivery</Label>
                         </div>
@@ -725,7 +1035,7 @@ export default function CheckoutPage() {
                       <div className="border border-gray-200 rounded-lg p-4">
                         <h3 className="font-medium text-gray-900 mb-2">Order Items</h3>
                         <div className="space-y-2">
-                          {state.items.map((item) => (
+                          {checkoutItems.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
                               <span>{item.name} × {item.quantity}</span>
                               <span>₹{(item.price * item.quantity).toFixed(2)}</span>
@@ -733,6 +1043,37 @@ export default function CheckoutPage() {
                           ))}
                         </div>
                       </div>
+
+                      {settings.giftEnabled && (
+                        <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              id="checkout-gift"
+                              checked={isGift}
+                              onCheckedChange={(checked) => setIsGift(checked === true)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <Label htmlFor="checkout-gift" className="flex items-center gap-2 font-medium cursor-pointer">
+                                <Gift className="w-4 h-4 text-[#8B7355]" />
+                                Send as Gift
+                                {settings.giftFee > 0 && (
+                                  <span className="text-sm font-normal text-gray-500">(+₹{settings.giftFee.toFixed(2)})</span>
+                                )}
+                              </Label>
+                              {isGift && (
+                                <Textarea
+                                  className="mt-3"
+                                  placeholder="Write a gift message..."
+                                  value={giftMessage}
+                                  onChange={(e) => setGiftMessage(e.target.value)}
+                                  maxLength={500}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -746,16 +1087,17 @@ export default function CheckoutPage() {
                   )}
 
                   {currentStep < 3 ? (
-                    <Button onClick={handleNextStep} className="ml-auto">
+                    <Button onClick={handleNextStep} className="ml-auto bg-[#8B7355] hover:bg-[#6F5B43] text-white">
                       Next Step
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleSubmit}
+                      type="button"
+                      onClick={handlePlaceOrder}
                       disabled={isProcessing}
-                      className="ml-auto bg-green-600 hover:bg-green-700"
+                      className="ml-auto bg-[#8B7355] hover:bg-[#6F5B43] text-white"
                     >
-                      {isProcessing ? 'Processing...' : 'Place Order'}
+                      {isProcessing ? 'Opening Razorpay…' : 'Place Order & Pay'}
                     </Button>
                   )}
                 </div>
@@ -768,17 +1110,30 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
 
                 <div className="space-y-4 mb-6">
+                  {isBuyNow && (
+                    <p className="text-xs text-[#8B7355] bg-[#F5EEDC] rounded-md px-3 py-2">
+                      Buy Now — checking out this item only (cart unchanged)
+                    </p>
+                  )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal ({state.itemCount} items)</span>
-                    <span className="font-medium">₹{state.total.toFixed(2)}</span>
+                    <span className="text-gray-600">Subtotal ({itemCount} items)</span>
+                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium text-green-600">Free</span>
+                    <span className="font-medium">
+                      {shipping === 0 ? <span className="text-green-600">Free</span> : `₹${shipping.toFixed(2)}`}
+                    </span>
                   </div>
+                  {isGift && settings.giftEnabled && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Gift wrapping</span>
+                      <span className="font-medium">₹{giftFee.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax (18%)</span>
-                    <span className="font-medium">₹{(state.total * 0.18).toFixed(2)}</span>
+                    <span className="text-gray-600">Tax ({Math.round((settings.taxRate || 0.18) * 100)}%)</span>
+                    <span className="font-medium">₹{tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-lg font-semibold">
@@ -791,10 +1146,12 @@ export default function CheckoutPage() {
                 <div className="space-y-3 text-sm text-gray-600">
                   <div className="flex items-center space-x-2">
                     <Truck className="w-4 h-4 text-green-600" />
-                    <span className="select-none">Free standard shipping</span>
+                    <span className="select-none">
+                      {shipping === 0 ? 'Free standard shipping' : `Shipping ₹${shipping.toFixed(2)}`}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Shield className="w-4 h-4 text-blue-600" />
+                    <Shield className="w-4 h-4 text-[#8B7355]" />
                     <span className="select-none">Secure payment</span>
                   </div>
                   <div className="flex items-center space-x-2">

@@ -5,9 +5,11 @@ import { useState, useEffect } from "react"
 import { Heart, ShoppingCart, Star, Plus, Minus, Share2, Truck, RotateCcw, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
-import { useSearchParams } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { calculateDiscount } from "@/lib/price-utils"
+import { saveBuyNowItem } from "@/lib/buy-now"
 
 interface Product {
   _id: string
@@ -31,6 +33,8 @@ interface Product {
 
 export default function ProductDetail({ productId: propProductId }: { productId?: string }) {
   const { addItem } = useCart()
+  const { requireAuth } = useAuth()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -137,7 +141,25 @@ export default function ProductDetail({ productId: propProductId }: { productId?
       originalPrice: product.originalPrice,
       image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
       category: product.category,
-      brand: ""
+      brand: "",
+      quantity,
+    })
+  }
+
+  const handleBuyNow = () => {
+    if (product.isOutOfStock || product.quantity <= 0) return
+    requireAuth(() => {
+      saveBuyNowItem({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+        category: product.category,
+        brand: "",
+        quantity,
+      })
+      router.push('/checkout?mode=buynow')
     })
   }
 
@@ -292,19 +314,15 @@ export default function ProductDetail({ productId: propProductId }: { productId?
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                 </Button>
-                <Link
-                  href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=${quantity}`}
-                  className="flex-1"
+                <Button
+                  onClick={handleBuyNow}
+                  disabled={product.isOutOfStock || product.quantity <= 0}
+                  className={`flex-1 h-12 text-lg ${product.isOutOfStock || product.quantity <= 0
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
                 >
-                  <Button
-                    disabled={product.isOutOfStock || product.quantity <= 0}
-                    className={`w-full h-12 text-lg ${product.isOutOfStock || product.quantity <= 0
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
-                  >
-                    Buy Now
-                  </Button>
-                </Link>
+                  Buy Now
+                </Button>
                 <Button variant="outline" className="px-6 py-3">
                   <Heart className="w-5 h-5" />
                 </Button>

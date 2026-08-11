@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Filter, X } from "lucide-react"
 import Link from "next/link"
 import { calculateDiscount } from "@/lib/price-utils"
+import BuyNowButton from "@/components/buy-now-button"
 
 interface FilterState {
   categories: string[]
@@ -342,16 +343,13 @@ export default function ProductsPage() {
                           >
                             {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                           </Button>
-                          <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
-                            <Button
-                              className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
-                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
-                              disabled={product.isOutOfStock || product.quantity <= 0}
-                            >
-                              Buy Now
-                            </Button>
-                          </Link>
+                          <BuyNowButton
+                            product={product}
+                            disabled={product.isOutOfStock || product.quantity <= 0}
+                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-[#D4AF37] hover:bg-[#8B7355] text-white"}`}
+                          />
                         </div>
                       </div>
                     </div>

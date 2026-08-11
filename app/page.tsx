@@ -16,6 +16,7 @@ import { useState, useEffect } from "react"
 import { useCart } from "@/contexts/cart-context"
 import { useProducts } from "@/hooks/useProducts"
 import { calculateDiscount } from "@/lib/price-utils"
+import BuyNowButton from "@/components/buy-now-button"
 
 export default function Home() {
   const { addItem } = useCart()
@@ -323,16 +324,13 @@ export default function Home() {
                           <span className="hidden sm:inline">{product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}</span>
                           <span className="sm:hidden">{product.isOutOfStock || product.quantity <= 0 ? "OOS" : "Add"}</span>
                         </Button>
-                        <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
-                          <Button
-                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
-                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                              : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white text-xs md:text-sm py-2`}
-                            disabled={product.isOutOfStock || product.quantity <= 0}
-                          >
-                            Buy Now
-                          </Button>
-                        </Link>
+                        <BuyNowButton
+                          product={product}
+                          disabled={product.isOutOfStock || product.quantity <= 0}
+                          className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white text-xs md:text-sm py-2`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -481,16 +479,13 @@ export default function Home() {
                           <ShoppingCart className="w-4 h-4 mr-2" />
                           {product.isOutOfStock || product.quantity <= 0 ? "Out of Stock" : "Add to Cart"}
                         </Button>
-                        <Link href={product.isOutOfStock || product.quantity <= 0 ? "#" : `/checkout?product=${product._id}&quantity=1`}>
-                          <Button
-                            className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
-                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                              : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white`}
-                            disabled={product.isOutOfStock || product.quantity <= 0}
-                          >
-                            Buy Now
-                          </Button>
-                        </Link>
+                        <BuyNowButton
+                          product={product}
+                          disabled={product.isOutOfStock || product.quantity <= 0}
+                          className={`flex-1 ${product.isOutOfStock || product.quantity <= 0
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-[#D4AF37] hover:bg-[#8B7355]"} text-white`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -686,11 +681,10 @@ export default function Home() {
                             <ShoppingCart className="w-4 h-4 mr-2" />
                             Add to Cart
                           </Button>
-                          <Link href={`/checkout?product=${product._id}&quantity=1`}>
-                            <Button className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white py-2 px-4 text-sm font-medium">
-                              Buy Now
-                            </Button>
-                          </Link>
+                          <BuyNowButton
+                            product={product}
+                            className="flex-1 bg-[#D4AF37] hover:bg-[#8B7355] text-white py-2 px-4 text-sm font-medium"
+                          />
                         </div>
                       </div>
                     </div>

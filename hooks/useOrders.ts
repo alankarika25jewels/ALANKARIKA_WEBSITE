@@ -28,15 +28,22 @@ export interface Order {
   customerDetails: CustomerDetails
   items: OrderItem[]
   subtotal: number
+  shipping?: number
+  giftFee?: number
+  isGift?: boolean
+  giftMessage?: string
   tax: number
   total: number
-  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe'
+  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe' | 'razorpay'
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded'
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   shippingStatus: 'pending' | 'shipped' | 'delivered'
   trackingNumber?: string
   stripeSessionId?: string
   stripePaymentIntentId?: string
+  razorpayOrderId?: string
+  razorpayPaymentId?: string
+  razorpaySignature?: string
   notes?: string
   createdAt: string
   updatedAt: string
@@ -47,9 +54,13 @@ export interface CreateOrderData {
   customerDetails: CustomerDetails
   items: OrderItem[]
   subtotal: number
+  shipping?: number
+  giftFee?: number
+  isGift?: boolean
+  giftMessage?: string
   tax: number
   total: number
-  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe'
+  paymentMethod: 'card' | 'upi' | 'cod' | 'stripe' | 'razorpay'
   notes?: string
 }
 
@@ -94,6 +105,7 @@ export const useOrders = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(orderData),
       })
 

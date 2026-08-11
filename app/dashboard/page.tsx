@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, Lock, User } from "lucide-react"
+import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, Lock, User, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -11,11 +11,12 @@ import { useOrders } from "@/hooks/useOrders"
 import ProductForm from "@/components/ProductForm"
 import OrderDetailModal from "@/components/OrderDetailModal"
 import CategoryManager from "@/components/CategoryManager"
+import SettingsManager from "@/components/SettingsManager"
 
 export default function DashboardPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, updateOrder } = useOrders()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'categories'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'categories' | 'settings'>('dashboard')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [orderFilters, setOrderFilters] = useState({
@@ -42,6 +43,7 @@ export default function DashboardPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: username,
           password: password
@@ -734,6 +736,17 @@ export default function DashboardPage() {
                 <Filter className="w-5 h-5 mr-3" />
                 Categories
               </button>
+
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'settings'
+                  ? 'bg-[#C4A484] text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                <Settings className="w-5 h-5 mr-3" />
+                Settings
+              </button>
             </nav>
           </div>
         </div>
@@ -744,6 +757,8 @@ export default function DashboardPage() {
             <DashboardContent />
           ) : activeTab === 'orders' ? (
             <OrdersInventoryContent />
+          ) : activeTab === 'settings' ? (
+            <SettingsManager />
           ) : (
             <CategoryManager />
           )}

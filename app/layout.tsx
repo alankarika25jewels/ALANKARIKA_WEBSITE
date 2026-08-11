@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Allura } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/contexts/cart-context'
+import { AuthProvider } from '@/contexts/auth-context'
 import { Toaster } from '@/components/ui/toaster'
 
 const allura = Allura({
@@ -44,10 +46,16 @@ html {
         `}</style>
       </head>
       <body className="overflow-x-hidden">
-        <CartProvider>
-          {children}
-          <Toaster />
-        </CartProvider>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
+        <AuthProvider>
+          <CartProvider>
+            {children}
+            <Toaster />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   )

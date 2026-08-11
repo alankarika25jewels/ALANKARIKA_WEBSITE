@@ -1,17 +1,66 @@
 "use client"
 
 import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
-import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, Heart, Star } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, Gift, Star } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
+import { computeShippingFee } from "@/lib/buy-now"
+import type { StoreSettings } from "@/lib/store-settings"
+import { DEFAULT_SETTINGS } from "@/lib/store-settings"
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
+  const { requireAuth } = useAuth()
+  const router = useRouter()
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
+  const [isGift, setIsGift] = useState(false)
+  const [giftMessage, setGiftMessage] = useState('')
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data) setSettings(data.data)
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = sessionStorage.getItem('cartGift')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        setIsGift(Boolean(parsed.isGift))
+        setGiftMessage(parsed.giftMessage || '')
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    sessionStorage.setItem('cartGift', JSON.stringify({ isGift, giftMessage }))
+  }, [isGift, giftMessage])
+
+  const shipping = useMemo(
+    () => computeShippingFee(state.total, settings.shippingFee, settings.freeShippingThreshold),
+    [state.total, settings.shippingFee, settings.freeShippingThreshold]
+  )
+  const giftFee = isGift && settings.giftEnabled ? settings.giftFee : 0
+  const tax = state.total * (settings.taxRate || 0.18)
+  const grandTotal = state.total + shipping + giftFee + tax
 
   const handleQuantityUpdate = (id: string, newQuantity: number) => {
     setIsUpdating(id)
@@ -19,33 +68,34 @@ export default function CartPage() {
     setTimeout(() => setIsUpdating(null), 500)
   }
 
+  const handleCheckout = () => {
+    requireAuth(() => router.push('/checkout'))
+  }
+
   if (state.items.length === 0) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        {/* Top spacing to prevent navbar overlap */}
         <div className="h-20"></div>
         <div className="min-h-[calc(100vh-120px)] flex items-center justify-center" style={{ backgroundColor: '#F0E1B9FF' }}>
-          <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center animate-fade-in-up">
+          <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center">
             <div className="mb-8">
               <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg">
-                <ShoppingBag className="w-16 h-16 text-[#C4A484]" />
+                <ShoppingBag className="w-16 h-16 text-[#8B7355]" />
               </div>
             </div>
-            <h1 className="font-allura text-6xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              Your Cart is Empty
-            </h1>
-            <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              Looks like you haven't added any beautiful jewelry pieces to your cart yet. Let's find something special for you!
+            <h1 className="font-allura text-6xl font-light text-gray-900 mb-4">Your Cart is Empty</h1>
+            <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
+              Add a beautiful piece, then come back to complete your order.
             </p>
-            <div className="space-x-4 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/products">
-                <Button size="lg" className="bg-[#C4A484] hover:bg-[#B39474] text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+                <Button size="lg" className="bg-[#8B7355] hover:bg-[#6F5B44] text-white px-8 py-3">
                   Continue Shopping
                 </Button>
               </Link>
               <Link href="/">
-                <Button variant="outline" size="lg" className="border-[#C4A484] text-[#C4A484] hover:bg-[#C4A484] hover:text-white px-8 py-3 text-lg transition-all duration-300 hover:scale-105">
+                <Button variant="outline" size="lg" className="border-[#8B7355] text-[#8B7355] hover:bg-[#8B7355] hover:text-white px-8 py-3">
                   Back to Home
                 </Button>
               </Link>
@@ -60,175 +110,187 @@ export default function CartPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      {/* Top spacing to prevent navbar overlap */}
       <div className="h-20"></div>
       <div className="min-h-[calc(100vh-120px)] py-12" style={{ backgroundColor: '#F0E1B9FF' }}>
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          {/* Header */}
-          <div className="mb-12 animate-fade-in-up">
-            <Link href="/" className="inline-flex items-center text-[#C4A484] hover:text-[#B39474] mb-6 transition-colors duration-300">
+          <div className="mb-12">
+            <Link href="/products" className="inline-flex items-center text-[#8B7355] hover:text-[#6F5B44] mb-6 transition-colors">
               <ArrowLeft className="w-5 h-5 mr-2" />
               <span className="font-medium">Continue Shopping</span>
             </Link>
             <div className="text-center">
-              <h1 className="font-allura text-6xl font-light text-gray-900 mb-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                Shopping Cart
-              </h1>
-              <p className="text-gray-600 text-lg animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                {state.itemCount} beautiful item{state.itemCount !== 1 ? 's' : ''} in your cart
+              <h1 className="font-allura text-6xl font-light text-gray-900 mb-4">Shopping Cart</h1>
+              <p className="text-gray-600 text-lg">
+                {state.itemCount} item{state.itemCount !== 1 ? 's' : ''} in your cart
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-[#C4A484]/5 to-[#F0E1B9]/10">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold text-gray-900 flex items-center">
-                      <Star className="w-6 h-6 text-[#C4A484] mr-2" />
-                      Your Selected Items
-                    </h2>
-                    <button
-                      onClick={clearCart}
-                      className="text-red-500 hover:text-red-600 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-50 transition-all duration-300"
-                    >
-                      Clear Cart
-                    </button>
-                  </div>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#E8DFD0] overflow-hidden">
+                <div className="p-6 border-b border-[#E8DFD0] flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <Star className="w-5 h-5 text-[#8B7355] mr-2" />
+                    Your Items
+                  </h2>
+                  <button
+                    onClick={clearCart}
+                    className="text-red-500 hover:text-red-600 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-50"
+                  >
+                    Clear Cart
+                  </button>
                 </div>
 
-                <div className="divide-y divide-gray-100">
-                  {state.items.map((item, index) => (
-                    <div key={item.id} className="p-6 hover:bg-gray-50/50 transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
-                      <div className="flex items-center space-x-6">
-                        <div className="flex-shrink-0 relative group">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={100}
-                            height={100}
-                            className="w-24 h-24 object-cover rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300"
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-xl transition-all duration-300"></div>
-                        </div>
-                        
+                <div className="divide-y divide-[#E8DFD0]">
+                  {state.items.map((item) => (
+                    <div key={item.id} className="p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={100}
+                          height={100}
+                          className="w-24 h-24 object-cover rounded-xl"
+                        />
+
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#C4A484] transition-colors">
-                            {item.name}
-                          </h3>
-                          <p className="text-sm text-[#C4A484] font-medium mb-1">{item.brand}</p>
+                          <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                          <p className="text-sm text-[#8B7355]">{item.brand}</p>
                           <p className="text-sm text-gray-500 capitalize">{item.category}</p>
                         </div>
 
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center border-2 border-[#C4A484]/20 rounded-xl overflow-hidden">
-                            <button
-                              onClick={() => handleQuantityUpdate(item.id, item.quantity - 1)}
-                              disabled={isUpdating === item.id}
-                              className="px-4 py-2 hover:bg-[#C4A484]/10 disabled:opacity-50 transition-all duration-300 text-[#C4A484] hover:text-[#B39474]"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="px-4 py-2 min-w-[3rem] text-center font-semibold text-gray-900 bg-[#C4A484]/5">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleQuantityUpdate(item.id, item.quantity + 1)}
-                              disabled={isUpdating === item.id}
-                              className="px-4 py-2 hover:bg-[#C4A484]/10 disabled:opacity-50 transition-all duration-300 text-[#C4A484] hover:text-[#B39474]"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
+                        <div className="flex items-center border border-[#E8DFD0] rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => handleQuantityUpdate(item.id, item.quantity - 1)}
+                            disabled={isUpdating === item.id}
+                            className="px-3 py-2 hover:bg-[#F5EEDC] disabled:opacity-50 text-[#8B7355]"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-3 py-2 min-w-[2.5rem] text-center font-semibold">{item.quantity}</span>
+                          <button
+                            onClick={() => handleQuantityUpdate(item.id, item.quantity + 1)}
+                            disabled={isUpdating === item.id}
+                            className="px-3 py-2 hover:bg-[#F5EEDC] disabled:opacity-50 text-[#8B7355]"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
 
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-[#C4A484] mb-1">
+                        <div className="text-right min-w-[6rem]">
+                          <p className="text-xl font-bold text-[#8B7355]">
                             ₹{(item.price * item.quantity).toFixed(2)}
                           </p>
-                          {item.originalPrice && (
-                            <p className="text-sm text-gray-500 line-through">
-                              ₹{(item.originalPrice * item.quantity).toFixed(2)}
-                            </p>
-                          )}
                         </div>
 
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="text-red-500 hover:text-red-600 p-3 rounded-xl hover:bg-red-50 transition-all duration-300"
+                          className="text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 self-start sm:self-center"
+                          aria-label="Remove item"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {settings.giftEnabled && (
+                <div className="bg-white rounded-2xl shadow-sm border border-[#E8DFD0] p-6">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="send-as-gift"
+                      checked={isGift}
+                      onCheckedChange={(checked) => setIsGift(checked === true)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 space-y-3">
+                      <Label htmlFor="send-as-gift" className="flex items-center gap-2 text-base font-semibold text-gray-900 cursor-pointer">
+                        <Gift className="w-4 h-4 text-[#8B7355]" />
+                        Send as Gift
+                        {settings.giftFee > 0 && (
+                          <span className="text-sm font-normal text-gray-500">(+₹{settings.giftFee.toFixed(2)})</span>
+                        )}
+                      </Label>
+                      {isGift && (
+                        <Textarea
+                          placeholder="Write a gift message..."
+                          value={giftMessage}
+                          onChange={(e) => setGiftMessage(e.target.value)}
+                          maxLength={500}
+                          className="min-h-[90px] border-[#E8DFD0] focus-visible:ring-[#8B7355]"
+                        />
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 sticky top-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2 flex items-center justify-center">
-                    <Star className="w-6 h-6 text-[#C4A484] mr-2" />
-                    Order Summary
-                  </h2>
-                  <div className="w-16 h-1 bg-gradient-to-r from-[#C4A484] to-[#F0E1B9] mx-auto rounded-full"></div>
                 </div>
-                
-                <div className="space-y-6 mb-8">
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600 font-medium">Subtotal ({state.itemCount} items)</span>
-                    <span className="font-semibold text-lg">₹{state.total.toFixed(2)}</span>
+              )}
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#E8DFD0] p-6 sticky top-24">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                  <Star className="w-5 h-5 text-[#8B7355] mr-2" />
+                  Order Summary
+                </h2>
+
+                <div className="space-y-3 mb-6 text-sm">
+                  <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
+                    <span className="text-gray-600">Subtotal ({state.itemCount} items)</span>
+                    <span className="font-medium">₹{state.total.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600 font-medium">Shipping</span>
-                    <span className="font-semibold text-green-600 flex items-center">
-                      <Heart className="w-4 h-4 mr-1" />
-                      Free
+                  <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="font-medium">
+                      {shipping === 0 ? (
+                        <span className="text-green-700">Free</span>
+                      ) : (
+                        `₹${shipping.toFixed(2)}`
+                      )}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="text-gray-600 font-medium">Tax (18%)</span>
-                    <span className="font-semibold">₹{(state.total * 0.18).toFixed(2)}</span>
-                  </div>
-                  <div className="bg-gradient-to-r from-[#C4A484]/10 to-[#F0E1B9]/10 p-6 rounded-xl">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-[#C4A484]">₹{(state.total + (state.total * 0.18)).toFixed(2)}</span>
+                  {isGift && settings.giftEnabled && (
+                    <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
+                      <span className="text-gray-600">Gift wrapping</span>
+                      <span className="font-medium">₹{giftFee.toFixed(2)}</span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2 text-center">Including all taxes & free shipping</p>
+                  )}
+                  <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
+                    <span className="text-gray-600">Tax ({Math.round((settings.taxRate || 0.18) * 100)}%)</span>
+                    <span className="font-medium">₹{tax.toFixed(2)}</span>
+                  </div>
+                  <div className="bg-[#F5EEDC] p-4 rounded-xl">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-gray-900">Total</span>
+                      <span className="text-2xl font-bold text-[#8B7355]">₹{grandTotal.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <Link href="/checkout" className="w-full">
-                    <Button className="w-full bg-[#C4A484] hover:bg-[#B39474] text-white text-lg py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
-                      <Star className="w-5 h-5 mr-2" />
-                      Proceed to Checkout
-                    </Button>
-                  </Link>
-                  
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={handleCheckout}
+                    className="w-full h-12 bg-[#8B7355] hover:bg-[#6F5B44] text-white text-base rounded-lg"
+                  >
+                    Proceed to Checkout
+                  </Button>
                   <Link href="/products" className="w-full">
-                    <Button variant="outline" className="w-full border-2 border-[#C4A484] text-[#C4A484] hover:bg-[#C4A484] hover:text-white py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 border border-[#8B7355] text-[#8B7355] bg-white hover:bg-[#F5EEDC] rounded-lg"
+                    >
                       Continue Shopping
                     </Button>
                   </Link>
                 </div>
 
-                <div className="mt-8 p-6 bg-gradient-to-r from-[#C4A484]/10 to-[#F0E1B9]/10 rounded-xl border border-[#C4A484]/20">
-                  <div className="flex items-center mb-3">
-                    <Heart className="w-5 h-5 text-[#C4A484] mr-2" />
-                    <h3 className="font-semibold text-[#C4A484]">Free Shipping</h3>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Free standard shipping on all orders. Estimated delivery: 3-5 business days. 
-                    <span className="font-medium text-[#C4A484]"> Express delivery available!</span>
+                {settings.freeShippingThreshold > 0 && shipping > 0 && (
+                  <p className="mt-4 text-xs text-gray-500 text-center">
+                    Free shipping on orders ₹{settings.freeShippingThreshold.toFixed(0)}+
                   </p>
-                </div>
+                )}
               </div>
             </div>
           </div>

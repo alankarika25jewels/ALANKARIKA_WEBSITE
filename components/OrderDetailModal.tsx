@@ -298,7 +298,21 @@ export default function OrderDetailModal({ order, isOpen, onClose, onUpdate }: O
                 <span className="font-medium">₹{order.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax (18%)</span>
+                <span className="text-gray-600">Shipping</span>
+                <span className="font-medium">
+                  {(order.shipping ?? 0) === 0 ? 'Free' : `₹${Number(order.shipping).toFixed(2)}`}
+                </span>
+              </div>
+              {order.isGift && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">
+                    Gift{order.giftMessage ? `: "${order.giftMessage}"` : ''}
+                  </span>
+                  <span className="font-medium">₹{Number(order.giftFee || 0).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tax</span>
                 <span className="font-medium">₹{order.tax.toFixed(2)}</span>
               </div>
               <div className="border-t pt-2">

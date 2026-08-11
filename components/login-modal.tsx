@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X, User, Lock, Mail } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import PhoneInput from "@/components/phone-input"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -19,6 +20,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: ""
   })
@@ -44,6 +46,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             email: formData.email,
             password: formData.password
@@ -88,10 +91,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
+            phone: formData.phone,
             password: formData.password
           })
         })
@@ -134,6 +139,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
       firstName: "",
       lastName: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: ""
     })
@@ -215,6 +221,18 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-xs md:text-sm font-medium text-gray-700">
+                  Mobile Number
+                </Label>
+                <PhoneInput
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(full) => setFormData((prev) => ({ ...prev, phone: full }))}
+                  required={!isLogin}
+                />
               </div>
             </div>
           )}

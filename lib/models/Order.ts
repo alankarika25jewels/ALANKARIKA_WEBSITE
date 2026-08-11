@@ -83,6 +83,11 @@ const OrderSchema = new mongoose.Schema({
     required: false, // Changed from true to false since it's auto-generated
     unique: true
   },
+  userId: {
+    type: String,
+    default: null,
+    index: true,
+  },
   customerDetails: {
     type: CustomerDetailsSchema,
     required: true
@@ -92,6 +97,28 @@ const OrderSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  shipping: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0,
+  },
+  giftFee: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0,
+  },
+  isGift: {
+    type: Boolean,
+    default: false,
+  },
+  giftMessage: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: '',
   },
   tax: {
     type: Number,
@@ -106,7 +133,7 @@ const OrderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['card', 'upi', 'cod', 'stripe']
+    enum: ['card', 'upi', 'cod', 'stripe', 'razorpay']
   },
   paymentStatus: {
     type: String,
@@ -135,6 +162,18 @@ const OrderSchema = new mongoose.Schema({
     trim: true
   },
   stripePaymentIntentId: {
+    type: String,
+    trim: true
+  },
+  razorpayOrderId: {
+    type: String,
+    trim: true
+  },
+  razorpayPaymentId: {
+    type: String,
+    trim: true
+  },
+  razorpaySignature: {
     type: String,
     trim: true
   },

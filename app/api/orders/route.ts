@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Order from '@/lib/models/Order'
+import { getAuthFromRequest } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -118,10 +119,16 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    const auth = getAuthFromRequest(request)
+
     // Create order
     const order = new Order({
       ...orderData,
-      userId: orderData.userId || null, // Optional user ID for guest orders
+      userId: orderData.userId || auth?.userId || null,
+      shipping: orderData.shipping ?? 0,
+      giftFee: orderData.giftFee ?? 0,
+      isGift: Boolean(orderData.isGift),
+      giftMessage: orderData.giftMessage || '',
       paymentStatus: 'pending',
       orderStatus: 'pending',
       shippingStatus: 'pending'

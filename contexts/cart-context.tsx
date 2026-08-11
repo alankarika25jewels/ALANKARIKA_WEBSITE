@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/auth-context'
 
 export interface CartItem {
   id: string
@@ -31,7 +32,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
       const existingItem = state.items.find(item => item.id === action.payload.id)
-      
+
       if (existingItem) {
         return {
           ...state,
@@ -43,20 +44,20 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           total: state.total + (action.payload.price * action.payload.quantity),
           itemCount: state.itemCount + action.payload.quantity
         }
-      } else {
-        return {
-          ...state,
-          items: [...state.items, action.payload],
-          total: state.total + (action.payload.price * action.payload.quantity),
-          itemCount: state.itemCount + action.payload.quantity
-        }
+      }
+
+      return {
+        ...state,
+        items: [...state.items, action.payload],
+        total: state.total + (action.payload.price * action.payload.quantity),
+        itemCount: state.itemCount + action.payload.quantity
       }
     }
-    
+
     case 'REMOVE_ITEM': {
       const itemToRemove = state.items.find(item => item.id === action.payload)
       if (!itemToRemove) return state
-      
+
       return {
         ...state,
         items: state.items.filter(item => item.id !== action.payload),
@@ -64,13 +65,13 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         itemCount: state.itemCount - itemToRemove.quantity
       }
     }
-    
+
     case 'UPDATE_QUANTITY': {
       const item = state.items.find(item => item.id === action.payload.id)
       if (!item) return state
-      
+
       const quantityDiff = action.payload.quantity - item.quantity
-      
+
       return {
         ...state,
         items: state.items.map(item =>
@@ -82,25 +83,16 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         itemCount: state.itemCount + quantityDiff
       }
     }
-    
+
     case 'CLEAR_CART':
-      return {
-        items: [],
-        total: 0,
-        itemCount: 0
-      }
-    
+      return { items: [], total: 0, itemCount: 0 }
+
     case 'LOAD_CART': {
       const total = action.payload.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       const itemCount = action.payload.reduce((sum, item) => sum + item.quantity, 0)
-      
-      return {
-        items: action.payload,
-        total,
-        itemCount
-      }
+      return { items: action.payload, total, itemCount }
     }
-    
+
     default:
       return state
   }
@@ -108,7 +100,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   state: CartState
-  addItem: (item: Omit<CartItem, 'quantity'>) => void
+  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }, options?: { skipAuth?: boolean }) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
@@ -131,51 +123,53 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     itemCount: 0
   })
   const { toast } = useToast()
+  const { requireAuth } = useAuth()
 
-  // Load cart from localStorage on mount (only on client-side)
   useEffect(() => {
-    // Only run on client-side
     if (typeof window === 'undefined') return
-    
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       try {
-        const parsedCart = JSON.parse(savedCart)
-        dispatch({ type: 'LOAD_CART', payload: parsedCart })
+        dispatch({ type: 'LOAD_CART', payload: JSON.parse(savedCart) })
       } catch (error) {
         console.error('Error loading cart from localStorage:', error)
       }
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes (only on client-side)
   useEffect(() => {
-    // Only run on client-side
     if (typeof window === 'undefined') return
-    
     localStorage.setItem('cart', JSON.stringify(state.items))
   }, [state.items])
 
-  const addItem = (item: Omit<CartItem, 'quantity'>) => {
-    dispatch({ type: 'ADD_ITEM', payload: { ...item, quantity: 1 } })
-    
-    // Show toast notification
+  const performAdd = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    const quantity = item.quantity && item.quantity > 0 ? item.quantity : 1
+    dispatch({ type: 'ADD_ITEM', payload: { ...item, quantity } })
     toast({
-      title: "Product Added to Cart! 🛒",
+      title: "Added to cart",
       description: `${item.name} has been added to your cart.`,
       variant: "success",
-      duration: 3000, // 3 seconds
+      duration: 3000,
     })
+  }
+
+  const addItem = (
+    item: Omit<CartItem, 'quantity'> & { quantity?: number },
+    options?: { skipAuth?: boolean }
+  ) => {
+    if (options?.skipAuth) {
+      performAdd(item)
+      return
+    }
+    requireAuth(() => performAdd(item))
   }
 
   const removeItem = (id: string) => {
     const itemToRemove = state.items.find(item => item.id === id)
     dispatch({ type: 'REMOVE_ITEM', payload: id })
-    
-    // Show toast notification
     if (itemToRemove) {
       toast({
-        title: "Item Removed from Cart",
+        title: "Item removed",
         description: `${itemToRemove.name} has been removed from your cart.`,
         variant: "destructive",
         duration: 3000,
@@ -187,31 +181,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (quantity <= 0) {
       removeItem(id)
     } else {
-      const item = state.items.find(item => item.id === id)
-      const oldQuantity = item?.quantity || 0
       dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } })
-      
-      // Show toast notification for quantity changes
-      if (item && quantity !== oldQuantity) {
-        const action = quantity > oldQuantity ? "increased" : "decreased"
-        toast({
-          title: "Quantity Updated",
-          description: `${item.name} quantity ${action} to ${quantity}.`,
-          duration: 2000,
-        })
-      }
     }
   }
 
   const clearCart = () => {
     const itemCount = state.itemCount
     dispatch({ type: 'CLEAR_CART' })
-    
-    // Show toast notification
     if (itemCount > 0) {
       toast({
-        title: "Cart Cleared",
-        description: `All ${itemCount} item${itemCount !== 1 ? 's' : ''} have been removed from your cart.`,
+        title: "Cart cleared",
+        description: `All items have been removed from your cart.`,
         variant: "destructive",
         duration: 3000,
       })

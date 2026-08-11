@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/lib/models/User'
+import { setAuthCookie, signAuthToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Login API called')
     const { email, password } = await request.json()
-    console.log('Login attempt for:', email)
 
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: 'Email and password are required' },
@@ -19,29 +17,22 @@ export async function POST(request: NextRequest) {
 
     await connectDB()
 
-    // Check if user exists
     const user = await User.findOne({ email })
     if (!user) {
-      console.log('User not found for:', email)
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      console.log('Invalid password for:', email)
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    console.log('Login successful for:', email)
-    
-    // Return user data (without password)
     const userData = {
       _id: user._id.toString(),
       email: user.email,
@@ -52,18 +43,26 @@ export async function POST(request: NextRequest) {
       role: user.role,
       address: user.address || {},
       preferences: user.preferences || {},
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email.split('@')[0],
     }
 
-    return NextResponse.json(
-      { 
+    const token = signAuthToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    })
+
+    const response = NextResponse.json(
+      {
         success: true,
         message: 'Login successful',
-        data: userData
+        data: userData,
       },
       { status: 200 }
     )
-
+    setAuthCookie(response, token)
+    return response
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
