@@ -55,25 +55,42 @@ export function currencyFromBrowser(): CurrencyCode {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
     if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return 'INR'
-    if (tz.startsWith('America/')) return 'USD'
-    if (tz.startsWith('Europe/London')) return 'GBP'
-    if (tz.startsWith('Europe/')) return 'EUR'
     if (tz.startsWith('Asia/Dubai')) return 'AED'
     if (tz.startsWith('Asia/Singapore')) return 'SGD'
+    if (tz.startsWith('Europe/London')) return 'GBP'
+    if (tz.startsWith('Europe/')) return 'EUR'
+    if (tz.startsWith('America/')) return 'USD'
   } catch {
     // ignore
   }
 
-  const lang = (navigator.language || 'en-in').toLowerCase()
-  if (LOCALE_TO_CURRENCY[lang]) return LOCALE_TO_CURRENCY[lang]
-  const base = lang.split('-')[0]
+  return currencyFromBrowserLocale(navigator.language || 'en-IN') ?? 'INR'
+}
+
+/** Map browser Accept-Language or navigator.language to currency (fallback only). */
+export function currencyFromBrowserLocale(langHeader: string): CurrencyCode | null {
+  const primary = langHeader.split(',')[0]?.trim().toLowerCase()
+  if (!primary) return null
+
+  if (LOCALE_TO_CURRENCY[primary]) return LOCALE_TO_CURRENCY[primary]
+
+  if (primary.includes('en-in') || primary.startsWith('hi')) return 'INR'
+  if (primary.includes('en-gb')) return 'GBP'
+  if (primary.includes('en-us') || primary.includes('en-ca') || primary.includes('en-au')) return 'USD'
+  if (primary.includes('de') || primary.includes('fr') || primary.includes('es') || primary.includes('it')) {
+    return 'EUR'
+  }
+  if (primary.includes('ae')) return 'AED'
+  if (primary.includes('sg')) return 'SGD'
+
+  const base = primary.split('-')[0]
   if (LOCALE_TO_CURRENCY[base]) return LOCALE_TO_CURRENCY[base]
 
-  return 'INR'
+  return null
 }
 
 export function isCurrencyCode(value: string): value is CurrencyCode {
   return value in CURRENCIES
 }
 
-export const STORAGE_KEY = 'alankarika_currency'
+export const STORAGE_KEY = 'alankarika_currency_v2'

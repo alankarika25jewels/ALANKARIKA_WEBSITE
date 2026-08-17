@@ -71,7 +71,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           detected = data.currency
         }
       } catch {
-        // use browser fallback
+        // use browser/timezone fallback
       }
       setCurrencyState(detected)
       localStorage.setItem(STORAGE_KEY, detected)
