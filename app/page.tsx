@@ -176,15 +176,17 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative animate-fade-in-up text-center lg:text-left" style={{ animationDelay: '0.3s' }}>
-              <Image
-                src="/logo/alankarika-newlogo.jpeg"
-                alt="Alankarika Logo"
-                width={800}
-                height={700}
-                className="rounded-2xl shadow-lg object-contain animate-fade-in-up transition-all duration-300 hover:scale-105 w-full max-w-md mx-auto lg:max-w-full"
-                style={{ animationDelay: '0.5s' }}
-              />
+            <div className="relative animate-fade-in-up text-center lg:text-left w-full" style={{ animationDelay: '0.3s' }}>
+              <div className="bg-white rounded-3xl shadow-xl p-8 sm:p-12 lg:p-16 flex items-center justify-center min-h-[360px] md:min-h-[460px] lg:min-h-[560px] w-full">
+                <Image
+                  src="/logo/alankarika_logo-tm.jpeg"
+                  alt="Alankarika Logo"
+                  width={1000}
+                  height={900}
+                  className="rounded-2xl object-contain animate-fade-in-up transition-all duration-300 hover:scale-105 w-full h-auto"
+                  style={{ animationDelay: '0.5s' }}
+                />
+              </div>
               <div className="absolute -bottom-3 -left-3 lg:-bottom-6 lg:-left-6 bg-white p-3 lg:p-6 rounded-xl lg:rounded-2xl shadow-lg animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
                 <div className="flex items-center space-x-2 lg:space-x-4">
                   <div className="w-8 h-8 lg:w-12 lg:h-12 bg-blue-600 rounded-full flex items-center justify-center">

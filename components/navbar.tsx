@@ -22,13 +22,13 @@ export default function Navbar() {
         <div className="flex items-center justify-center lg:justify-between py-0 ml-30">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center">
-            <Link href="/" className="flex items-center space-x-0.5">
+            <Link href="/" className="flex items-center px-1.5 py-0">
               <Image
-                src="/logo/alankarika-newlogo-removebg-preview.png"
+                src="/logo/alankarika_logo-tm-removebg-preview.png"
                 alt="Alankarika Logo"
                 width={60}
                 height={60}
-                className="w-12 h-12 md:w-16 md:h-16 object-contain scale-[2.8] translate-y-1"
+                className="w-12 h-12 md:w-16 md:h-16 object-contain scale-[2.35]"
               />
             </Link>
           </div>
@@ -36,15 +36,14 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-20  ml-40">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-0.5 flex-shrink-0">
+            <Link href="/" className="flex items-center flex-shrink-0 px-2 py-0">
               <Image
-                src="/logo/alankarika-newlogo-removebg-preview.png"
+                src="/logo/alankarika_logo-tm-removebg-preview.png"
                 alt="Alankarika Logo"
                 width={80}
                 height={80}
-                className="w-20 h-20 object-contain scale-[2.8] translate-y-1"
+                className="w-20 h-20 object-contain scale-[2.35]"
               />
-
             </Link>
             {/* Search Bar */}
             <form action="/search" method="GET" className="relative">

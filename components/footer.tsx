@@ -47,7 +47,7 @@ export default function Footer() {
             <div className="flex flex-col items-center text-center">
               <div className="bg-[#F5EEDC] rounded-2xl shrink-0 w-56 h-28 sm:w-64 sm:h-32 flex items-center justify-center overflow-hidden px-4 py-1">
                 <Image
-                  src="/logo/alankarika-newlogo-removebg-preview.png"
+                  src="/logo/alankarika_logo-tm-removebg-preview.png"
                   alt="Alankarika Logo"
                   width={256}
                   height={128}
