@@ -18,6 +18,7 @@ import { useProducts } from "@/hooks/useProducts"
 import { calculateDiscount } from "@/lib/price-utils"
 import BuyNowButton from "@/components/buy-now-button"
 import PriceDisplay from "@/components/price-display"
+import FloatingContactButtons from "@/components/floating-contact-buttons"
 
 export default function Home() {
   const { addItem } = useCart()
@@ -724,6 +725,7 @@ export default function Home() {
 
 
       <Footer />
+      <FloatingContactButtons />
     </div>
   )
 }
