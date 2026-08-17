@@ -21,19 +21,6 @@ export default function FloatingContactButtons() {
 
   return (
     <div className="fixed bottom-6 right-4 sm:right-6 z-50 flex flex-col gap-3 items-end pointer-events-none">
-      <Link
-        href="/contact"
-        className="pointer-events-auto group flex items-center gap-2"
-        aria-label="Go to contact page"
-      >
-        <span className="hidden sm:block opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 bg-white text-[#8B7355] text-sm font-medium px-3 py-1.5 rounded-full shadow-lg border border-[#D4AF37]/40">
-          Contact Us
-        </span>
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#8B7355] text-white shadow-lg border-2 border-[#D4AF37] hover:bg-[#6F5B44] hover:scale-105 transition-all duration-200">
-          <MessageCircle className="w-7 h-7" />
-        </span>
-      </Link>
-
       <a
         href={whatsappUrl}
         target="_blank"
@@ -48,6 +35,19 @@ export default function FloatingContactButtons() {
           <WhatsAppIcon className="w-7 h-7" />
         </span>
       </a>
+
+      <Link
+        href="/contact"
+        className="pointer-events-auto group flex items-center gap-2"
+        aria-label="Go to contact page"
+      >
+        <span className="hidden sm:block opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 bg-white text-[#8B7355] text-sm font-medium px-3 py-1.5 rounded-full shadow-lg border border-[#D4AF37]/40">
+          Contact Us
+        </span>
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#8B7355] text-white shadow-lg border-2 border-[#D4AF37] hover:bg-[#6F5B44] hover:scale-105 transition-all duration-200">
+          <MessageCircle className="w-7 h-7" />
+        </span>
+      </Link>
     </div>
   )
 }
