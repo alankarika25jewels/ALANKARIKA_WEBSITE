@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { serializeKeyFeatures } from '@/lib/key-features'
 
 export interface Product {
   _id: string
@@ -34,6 +35,8 @@ export interface CreateProductData {
   quantity: number
   category: string
   subCategory?: string
+  rating?: number
+  reviews?: number
   images: File[]
   videos: File[]
   isOutOfStock?: boolean
@@ -87,7 +90,7 @@ export const useProducts = () => {
       // Add text fields
       formData.append('name', productData.name)
       formData.append('description', productData.description)
-      formData.append('keyFeatures', productData.keyFeatures.join(','))
+      formData.append('keyFeatures', serializeKeyFeatures(productData.keyFeatures))
       formData.append('price', productData.price.toString())
       if (productData.originalPrice) {
         formData.append('originalPrice', productData.originalPrice.toString())
@@ -99,6 +102,12 @@ export const useProducts = () => {
       formData.append('category', productData.category)
       if (productData.subCategory) {
         formData.append('subCategory', productData.subCategory)
+      }
+      if (productData.rating !== undefined) {
+        formData.append('rating', productData.rating.toString())
+      }
+      if (productData.reviews !== undefined) {
+        formData.append('reviews', productData.reviews.toString())
       }
       if (productData.isOutOfStock !== undefined) {
         formData.append('isOutOfStock', productData.isOutOfStock.toString())
@@ -149,13 +158,15 @@ export const useProducts = () => {
       // Add text fields
       if (productData.name) formData.append('name', productData.name)
       if (productData.description) formData.append('description', productData.description)
-      if (productData.keyFeatures) formData.append('keyFeatures', productData.keyFeatures.join(','))
+      if (productData.keyFeatures) formData.append('keyFeatures', serializeKeyFeatures(productData.keyFeatures))
       if (productData.price) formData.append('price', productData.price.toString())
       if (productData.originalPrice) formData.append('originalPrice', productData.originalPrice.toString())
       if (productData.sizeConstraints) formData.append('sizeConstraints', productData.sizeConstraints)
       if (productData.quantity) formData.append('quantity', productData.quantity.toString())
       if (productData.category) formData.append('category', productData.category)
       if (productData.subCategory) formData.append('subCategory', productData.subCategory)
+      if (productData.rating !== undefined) formData.append('rating', productData.rating.toString())
+      if (productData.reviews !== undefined) formData.append('reviews', productData.reviews.toString())
       if (productData.isOutOfStock !== undefined) {
         formData.append('isOutOfStock', productData.isOutOfStock.toString())
       }

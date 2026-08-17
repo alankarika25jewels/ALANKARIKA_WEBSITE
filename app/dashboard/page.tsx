@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, Lock, User, Settings } from "lucide-react"
+import { LayoutDashboard, Package, Plus, Edit, Trash2, Eye, Search, Filter, MoreHorizontal, Lock, User, Settings, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,11 +12,12 @@ import ProductForm from "@/components/ProductForm"
 import OrderDetailModal from "@/components/OrderDetailModal"
 import CategoryManager from "@/components/CategoryManager"
 import SettingsManager from "@/components/SettingsManager"
+import BannerManager from "@/components/BannerManager"
 
 export default function DashboardPage() {
   const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts()
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, updateOrder } = useOrders()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'categories' | 'settings'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'categories' | 'banners' | 'settings'>('dashboard')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [orderFilters, setOrderFilters] = useState({
@@ -184,9 +185,21 @@ export default function DashboardPage() {
     }
   }
 
-  const handleEditProduct = (product: any) => {
-    setEditingProduct(product)
-    setShowAddForm(true)
+  const handleEditProduct = async (product: any) => {
+    try {
+      const res = await fetch(`/api/products/${product._id}`)
+      const data = await res.json()
+      if (data.success && data.data) {
+        setEditingProduct(data.data)
+        setShowAddForm(true)
+      } else {
+        setEditingProduct(product)
+        setShowAddForm(true)
+      }
+    } catch {
+      setEditingProduct(product)
+      setShowAddForm(true)
+    }
   }
 
   const handleDeleteProduct = async (productId: string) => {
@@ -738,6 +751,17 @@ export default function DashboardPage() {
               </button>
 
               <button
+                onClick={() => setActiveTab('banners')}
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'banners'
+                  ? 'bg-[#C4A484] text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                <ImageIcon className="w-5 h-5 mr-3" />
+                Banners
+              </button>
+
+              <button
                 onClick={() => setActiveTab('settings')}
                 className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === 'settings'
                   ? 'bg-[#C4A484] text-white'
@@ -759,6 +783,8 @@ export default function DashboardPage() {
             <OrdersInventoryContent />
           ) : activeTab === 'settings' ? (
             <SettingsManager />
+          ) : activeTab === 'banners' ? (
+            <BannerManager />
           ) : (
             <CategoryManager />
           )}
@@ -767,35 +793,17 @@ export default function DashboardPage() {
 
       {/* Add/Edit Product Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </h2>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAddForm(false)
-                  setEditingProduct(null)
-                }}
-              >
-                ✕
-              </Button>
-            </div>
-
-            <ProductForm
-              isOpen={showAddForm}
-              onClose={() => {
-                setShowAddForm(false)
-                setEditingProduct(null)
-              }}
-              onSubmit={handleCreateProduct}
-              product={editingProduct}
-              mode={editingProduct ? 'edit' : 'create'}
-            />
-          </div>
-        </div>
+        <ProductForm
+          key={editingProduct?._id || 'new-product'}
+          isOpen={showAddForm}
+          onClose={() => {
+            setShowAddForm(false)
+            setEditingProduct(null)
+          }}
+          onSubmit={handleCreateProduct}
+          product={editingProduct}
+          mode={editingProduct ? 'edit' : 'create'}
+        />
       )}
 
       {/* Order Detail Modal */}

@@ -13,6 +13,7 @@ import { Filter, X } from "lucide-react"
 import Link from "next/link"
 import { calculateDiscount } from "@/lib/price-utils"
 import BuyNowButton from "@/components/buy-now-button"
+import PriceDisplay from "@/components/price-display"
 
 interface FilterState {
   categories: string[]
@@ -316,9 +317,9 @@ export default function ProductsPage() {
                           {product.name}
                         </h3>
                         <div className="mb-4">
-                          <span className="text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
+                          <span className="text-2xl font-bold text-[#8B7355]"><PriceDisplay amount={product.price} /></span>
                           {product.originalPrice && product.originalPrice > product.price && (
-                            <span className="text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                            <span className="text-sm text-gray-500 line-through ml-2"><PriceDisplay amount={product.originalPrice} /></span>
                           )}
                         </div>
                         {/* Action Buttons - Horizontal Layout Below Price */}

@@ -10,6 +10,8 @@ import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import Link from 'next/link'
 import { calculateDiscount } from '@/lib/price-utils'
+import { useCurrency } from '@/contexts/currency-context'
+import PriceDisplay from '@/components/price-display'
 
 interface Product {
   _id: string
@@ -29,6 +31,7 @@ interface Product {
 }
 
 export default function SearchPage() {
+  const { formatPrice } = useCurrency()
   const { products, loading, error } = useProducts()
   const { addItem } = useCart()
   const searchParams = useSearchParams()
@@ -207,9 +210,9 @@ export default function SearchPage() {
                   <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-600">₹{priceRange[0]}</span>
+                      <span className="text-sm text-gray-600">{formatPrice(priceRange[0])}</span>
                       <span className="text-sm text-gray-600">-</span>
-                      <span className="text-sm text-gray-600">₹{priceRange[1]}</span>
+                      <span className="text-sm text-gray-600">{formatPrice(priceRange[1])}</span>
                     </div>
                     <input
                       type="range"
@@ -356,9 +359,9 @@ export default function SearchPage() {
                       {/* Price */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-2">
-                          <span className="text-xl font-bold text-blue-600">₹{product.price.toFixed(2)}</span>
+                          <span className="text-xl font-bold text-blue-600"><PriceDisplay amount={product.price} /></span>
                           {product.originalPrice && product.originalPrice > product.price && (
-                            <span className="text-sm text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
+                            <span className="text-sm text-gray-500 line-through"><PriceDisplay amount={product.originalPrice} /></span>
                           )}
                           {product.isOnSale && product.originalPrice && (
                             <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">

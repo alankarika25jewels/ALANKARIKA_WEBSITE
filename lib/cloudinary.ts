@@ -9,11 +9,41 @@ cloudinary.config({
 
 export default cloudinary
 
-export const uploadToCloudinary = async (file: Buffer, folder: string, resourceType: 'image' | 'video' = 'image') => {
+export type ImageUploadProfile = 'product' | 'banner' | 'category'
+
+function inferUploadProfile(folder: string): ImageUploadProfile {
+  if (folder.includes('banners')) return 'banner'
+  if (folder.includes('categories')) return 'category'
+  return 'product'
+}
+
+function getUploadTransformations(profile: ImageUploadProfile) {
+  switch (profile) {
+    case 'banner':
+      // Hero banners need full-width quality — only cap extremely large originals
+      return [{ width: 3840, crop: 'limit' }, { quality: 'auto:best' }, { fetch_format: 'auto' }]
+    case 'category':
+      return [{ width: 1200, crop: 'limit' }, { quality: 'auto:good' }, { fetch_format: 'auto' }]
+    case 'product':
+    default:
+      return [{ width: 800, height: 800, crop: 'limit' }, { quality: 'auto' }, { fetch_format: 'auto' }]
+  }
+}
+
+export const uploadToCloudinary = async (
+  file: Buffer,
+  folder: string,
+  resourceType: 'image' | 'video' = 'image',
+  profile?: ImageUploadProfile
+) => {
   try {
     console.log('Starting Cloudinary upload...')
     console.log('Cloud name:', cloudinary.config().cloud_name)
     console.log('API key:', cloudinary.config().api_key ? 'Present' : 'Missing')
+
+    const uploadProfile = profile ?? inferUploadProfile(folder)
+    const imageTransformations =
+      resourceType === 'image' ? getUploadTransformations(uploadProfile) : undefined
 
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
@@ -23,12 +53,8 @@ export const uploadToCloudinary = async (file: Buffer, folder: string, resourceT
           allowed_formats: resourceType === 'image'
             ? ['jpg', 'jpeg', 'png', 'webp']
             : ['mp4', 'mov', 'avi', 'mkv'],
-          transformation: resourceType === 'image' ? [
-            { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto' },
-            { fetch_format: 'auto' }
-          ] : undefined,
-          secure: true, // Ensure HTTPS URLs
+          transformation: imageTransformations,
+          secure: true,
           use_filename: true,
           unique_filename: true
         },

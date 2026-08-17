@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Product from '@/lib/models/Product'
+import { parseKeyFeatures } from '@/lib/key-features'
 
 export async function GET(
   request: NextRequest,
@@ -48,13 +49,15 @@ export async function PUT(
     const name = formData.get('name') as string
     const description = formData.get('description') as string
     const keyFeaturesRaw = formData.get('keyFeatures') as string
-    const keyFeatures = keyFeaturesRaw ? keyFeaturesRaw.split(',').map(f => f.trim()).filter(f => f) : []
+    const keyFeatures = parseKeyFeatures(keyFeaturesRaw)
     const price = parseFloat(formData.get('price') as string)
     const originalPrice = formData.get('originalPrice') ? parseFloat(formData.get('originalPrice') as string) : undefined
     const sizeConstraints = formData.get('sizeConstraints') as string
     const quantity = parseInt(formData.get('quantity') as string)
     const category = formData.get('category') as string
     const subCategory = formData.get('subCategory') as string || undefined
+    const rating = formData.get('rating') ? parseFloat(formData.get('rating') as string) : undefined
+    const reviews = formData.get('reviews') ? parseInt(formData.get('reviews') as string, 10) : undefined
 
     // Validate required fields
     if (!name || !description || !keyFeatures.length || !price || !quantity || !category) {
@@ -138,6 +141,8 @@ export async function PUT(
         quantity,
         category,
         subCategory,
+        ...(rating !== undefined && { rating }),
+        ...(reviews !== undefined && { reviews }),
         isOutOfStock: formData.get('isOutOfStock') === 'true',
         images: [...existingImages, ...uploadedImages],
         videos: [...existingVideos, ...uploadedVideos]

@@ -2,18 +2,16 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Menu, X, User, ShoppingCart } from "lucide-react"
+import { Search, Menu, X, ShoppingCart } from "lucide-react"
 import { useState } from "react"
 import { useCart } from "@/contexts/cart-context"
 
 import CartIcon from "./cart-icon"
-import LoginIcon from "./login-icon"
-import LoginModal from "./login-modal"
+import CurrencySelector from "./currency-selector"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { state } = useCart()
 
@@ -62,7 +60,7 @@ export default function Navbar() {
             </form>
 
             {/* Desktop Navigation */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-5">
               <Link href="/" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
                 Home
               </Link>
@@ -75,16 +73,24 @@ export default function Navbar() {
               <Link href="/contact" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
                 Contact
               </Link>
-              <Link href="/account" className="text-white hover:text-[#D4AF37] transition-colors font-medium text-sm">
-                Account
-              </Link>
-              <LoginIcon />
+              <div className="pl-2 border-l border-white/30">
+                <CurrencySelector variant="dark" />
+              </div>
               <CartIcon />
             </div>
           </div>
 
           {/* Mobile buttons */}
           <div className="lg:hidden flex items-center space-x-2 md:space-x-3 absolute right-4">
+            <CurrencySelector variant="dark" />
+            <Link href="/cart" className="relative p-1 text-white hover:text-[#D4AF37]">
+              <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+              {state.itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {state.itemCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="text-white hover:text-white/80 transition-colors p-1"
@@ -119,61 +125,41 @@ export default function Navbar() {
           <div className="lg:hidden pb-4 px-2 md:px-0">
             <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
               <div className="flex flex-col space-y-4 md:space-y-6">
-                <Link href="/" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
+                <Link href="/" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg" onClick={() => setIsMenuOpen(false)}>
                   Home
                 </Link>
-                <Link href="/about" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
+                <Link href="/about" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg" onClick={() => setIsMenuOpen(false)}>
                   About
                 </Link>
-                <Link href="/products" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
+                <Link href="/products" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg" onClick={() => setIsMenuOpen(false)}>
                   Products
                 </Link>
-                <Link href="/contact" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
+                <Link href="/contact" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg" onClick={() => setIsMenuOpen(false)}>
                   Contact
                 </Link>
-                <Link href="/account" className="text-gray-900 hover:text-[#D4AF37] font-medium text-base md:text-lg">
-                  Account
-                </Link>
-                <div className="flex items-center space-x-3 md:space-x-4 pt-3 md:pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      setIsLoginModalOpen(true)
-                      setIsMenuOpen(false)
-                    }}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                  >
-                    <User className="w-5 h-5 text-gray-900" />
-                    <span className="text-gray-900 font-medium text-sm">Login</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCartOpen(true)
-                      setIsMenuOpen(false)
-                    }}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors relative"
-                  >
-                    <ShoppingCart className="w-5 h-5 text-gray-900" />
-                    <span className="text-gray-900 font-medium text-sm">Cart</span>
-                    {state.itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                        <span className="text-xs">{state.itemCount}</span>
-                      </span>
-                    )}
-                  </button>
+                <div className="pt-2 pb-2 border-y border-[#E8DFD0]">
+                  <p className="text-xs text-gray-500 mb-2 text-center">Shop in your currency</p>
+                  <CurrencySelector variant="light" />
                 </div>
+                <Link
+                  href="/cart"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center justify-center space-x-2 px-4 py-3 rounded-full bg-[#8B7355] hover:bg-[#6F5B44] text-white font-medium transition-colors relative"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>View Cart</span>
+                  {state.itemCount > 0 && (
+                    <span className="bg-white text-[#8B7355] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {state.itemCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>
         )}
 
-        {/* Login Modal */}
-        <LoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-          onLoginSuccess={() => setIsLoginModalOpen(false)}
-        />
-
-        {/* Cart Modal for Mobile */}
+        {/* Cart Modal for Mobile - kept for backwards compat but menu links to /cart */}
         {isCartOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsCartOpen(false)}></div>
@@ -188,10 +174,12 @@ export default function Navbar() {
                     <X className="w-6 h-6" />
                   </button>
                 </div>
-                {/* Cart content would go here - simplified for now */}
                 <div className="text-center py-8">
                   <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Your cart is empty</p>
+                  <p className="text-gray-500 mb-4">Your cart is empty</p>
+                  <Link href="/cart" className="text-[#8B7355] font-medium" onClick={() => setIsCartOpen(false)}>
+                    Go to cart
+                  </Link>
                 </div>
               </div>
             </div>
@@ -200,4 +188,4 @@ export default function Navbar() {
       </div>
     </nav>
   )
-} 
+}

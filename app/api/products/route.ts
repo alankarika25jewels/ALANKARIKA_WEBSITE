@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Product from '@/lib/models/Product'
 import { uploadToCloudinary, getCloudinaryFolder } from '@/lib/cloudinary'
+import { parseKeyFeatures } from '@/lib/key-features'
 
 export async function GET() {
   try {
@@ -33,7 +34,7 @@ export async function GET() {
 
     // Optimize query: only fetch active products, limit fields, use lean for faster queries
     const products = await Product.find({ isActive: { $ne: false } })
-      .select('name description price originalPrice offerPercentage isOnSale isNew category images quantity rating reviews')
+      .select('name description keyFeatures price originalPrice offerPercentage isOnSale isNew category subCategory sizeConstraints images videos quantity rating reviews isOutOfStock isActive')
       .sort({ createdAt: -1 })
       .limit(50) // Limit to 50 products for better performance
       .lean() // Use lean() for faster queries (returns plain JS objects)
@@ -95,13 +96,15 @@ export async function POST(request: NextRequest) {
     const name = formData.get('name') as string
     const description = formData.get('description') as string
     const keyFeaturesRaw = formData.get('keyFeatures') as string
-    const keyFeatures = keyFeaturesRaw ? keyFeaturesRaw.split(',').map(f => f.trim()).filter(f => f) : []
+    const keyFeatures = parseKeyFeatures(keyFeaturesRaw)
     const price = parseFloat(formData.get('price') as string)
     const originalPrice = formData.get('originalPrice') ? parseFloat(formData.get('originalPrice') as string) : undefined
     const sizeConstraints = formData.get('sizeConstraints') as string
     const quantity = parseInt(formData.get('quantity') as string)
     const category = formData.get('category') as string
     const subCategory = formData.get('subCategory') as string || undefined
+    const rating = formData.get('rating') ? parseFloat(formData.get('rating') as string) : 0
+    const reviews = formData.get('reviews') ? parseInt(formData.get('reviews') as string, 10) : 0
 
     // Debug logging
     console.log('Received form data:', {
@@ -190,6 +193,8 @@ export async function POST(request: NextRequest) {
       quantity,
       category,
       subCategory,
+      rating,
+      reviews,
       isOutOfStock: formData.get('isOutOfStock') === 'true',
       images: uploadedImages,
       videos: uploadedVideos

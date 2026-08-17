@@ -1,14 +1,13 @@
 "use client"
 
 import { useCart, CartItem } from "@/contexts/cart-context"
-import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 
-import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle, User, Lock, Mail, Gift } from "lucide-react"
+import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle, Gift } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -20,6 +19,7 @@ import PhoneInput from "@/components/phone-input"
 import { clearBuyNowItem, computeShippingFee, loadBuyNowItem } from "@/lib/buy-now"
 import type { StoreSettings } from "@/lib/store-settings"
 import { DEFAULT_SETTINGS } from "@/lib/store-settings"
+import { useCurrency } from "@/contexts/currency-context"
 
 /** Reliably load Razorpay checkout.js (handles already-injected script tags). */
 function loadRazorpayScript(): Promise<boolean> {
@@ -65,8 +65,8 @@ function loadRazorpayScript(): Promise<boolean> {
 
 export default function CheckoutPage() {
   const { state, clearCart } = useCart()
-  const { user, isAuthenticated, requireAuth, refreshUser } = useAuth()
   const { createOrder } = useOrders()
+  const { formatPrice, currency } = useCurrency()
   const router = useRouter()
   const searchParams = useSearchParams()
   const isBuyNow = searchParams.get('mode') === 'buynow'
@@ -91,35 +91,8 @@ export default function CheckoutPage() {
     paymentMethod: 'razorpay'
   })
 
-  // Authentication modal (fallback if not logged in)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [isLogin, setIsLogin] = useState(true)
-  const [authData, setAuthData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-  })
-  const [authLoading, setAuthLoading] = useState(false)
   const [stripeReady, setStripeReady] = useState(false)
   const [razorpayReady, setRazorpayReady] = useState(false)
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true)
-    } else {
-      setShowAuthModal(false)
-      setFormData(prev => ({
-        ...prev,
-        firstName: user?.firstName || prev.firstName,
-        lastName: user?.lastName || prev.lastName,
-        email: user?.email || prev.email,
-        phone: user?.phone || prev.phone,
-      }))
-    }
-  }, [isAuthenticated, user])
 
   useEffect(() => {
     fetch('/api/settings')
@@ -397,62 +370,6 @@ export default function CheckoutPage() {
     }
   }, [state.items.length, router, isBuyNow, buyNowReady])
 
-  // Authentication functions
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setAuthLoading(true)
-
-    try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(authData),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        await refreshUser()
-        setShowAuthModal(false)
-        setFormData(prev => ({
-          ...prev,
-          firstName: data.data.firstName || '',
-          lastName: data.data.lastName || '',
-          email: data.data.email || ''
-        }))
-        toast({
-          title: isLogin ? "Login Successful" : "Registration Successful",
-          description: isLogin ? "Welcome back!" : "Account created successfully!",
-        })
-      } else {
-        toast({
-          title: "Authentication Failed",
-          description: data.error || data.message || "Please try again",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setAuthLoading(false)
-    }
-  }
-
-  const handleAuthInputChange = (field: string, value: string) => {
-    setAuthData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
   // Show loading state while checking cart / buy now
   if (!buyNowReady || (!isBuyNow && state.items.length === 0) || (isBuyNow && !buyNowItem)) {
     return (
@@ -522,7 +439,6 @@ export default function CheckoutPage() {
       const orderTotal = total
 
       const orderData: CreateOrderData = {
-        userId: user?._id,
         customerDetails: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -642,138 +558,6 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await handlePlaceOrder()
-  }
-
-  // Show authentication modal if not authenticated
-  if (showAuthModal && !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        {/* Top spacing to prevent navbar overlap */}
-        <div className="h-20"></div>
-        <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
-          <div className="max-w-md w-full space-y-8 p-8">
-            <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 bg-[#8B7355] rounded-full flex items-center justify-center mb-4">
-                  <Lock className="h-6 w-6 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {isLogin ? 'Sign In to Continue' : 'Create Account'}
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {isLogin
-                    ? 'Please sign in to proceed with your order'
-                    : 'Create an account to complete your purchase'
-                  }
-                </p>
-              </div>
-
-              <form onSubmit={handleAuth} className="space-y-4">
-                {!isLogin && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input
-                          id="firstName"
-                          type="text"
-                          value={authData.firstName}
-                          onChange={(e) => handleAuthInputChange('firstName', e.target.value)}
-                          required={!isLogin}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input
-                          id="lastName"
-                          type="text"
-                          value={authData.lastName}
-                          onChange={(e) => handleAuthInputChange('lastName', e.target.value)}
-                          required={!isLogin}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="auth-phone">Mobile Number</Label>
-                      <div className="mt-1">
-                        <PhoneInput
-                          id="auth-phone"
-                          value={authData.phone}
-                          onChange={(full) => handleAuthInputChange('phone', full)}
-                          required={!isLogin}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={authData.email}
-                    onChange={(e) => handleAuthInputChange('email', e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={authData.password}
-                    onChange={(e) => handleAuthInputChange('password', e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-
-                {!isLogin && (
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={authData.confirmPassword}
-                      onChange={(e) => handleAuthInputChange('confirmPassword', e.target.value)}
-                      required={!isLogin}
-                      className="mt-1"
-                    />
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  className="w-full bg-[#8B7355] hover:bg-[#D4AF37] text-white"
-                  disabled={authLoading}
-                >
-                  {authLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
-                </Button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-[#8B7355] hover:text-[#D4AF37] text-sm font-medium"
-                >
-                  {isLogin
-                    ? "Don't have an account? Create one"
-                    : "Already have an account? Sign in"
-                  }
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    )
   }
 
   return (
@@ -965,7 +749,12 @@ export default function CheckoutPage() {
                           </Label>
                         </div>
                         <p className="text-xs text-gray-500 mt-2 ml-7">
-                          Secure payment via Razorpay. You can pay with card, UPI, or wallet when you place the order.
+                          Secure payment via Razorpay (card, UPI, wallet).
+                          {currency !== 'INR' && (
+                            <span className="block mt-1 text-[#8B7355]">
+                              Prices shown in {currency}. Payment is processed in INR at checkout.
+                            </span>
+                          )}
                         </p>
                       </div>
 
@@ -1038,7 +827,7 @@ export default function CheckoutPage() {
                           {checkoutItems.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
                               <span>{item.name} × {item.quantity}</span>
-                              <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                              <span>{formatPrice(item.price * item.quantity)}</span>
                             </div>
                           ))}
                         </div>
@@ -1058,7 +847,7 @@ export default function CheckoutPage() {
                                 <Gift className="w-4 h-4 text-[#8B7355]" />
                                 Send as Gift
                                 {settings.giftFee > 0 && (
-                                  <span className="text-sm font-normal text-gray-500">(+₹{settings.giftFee.toFixed(2)})</span>
+                                  <span className="text-sm font-normal text-gray-500">(+{formatPrice(settings.giftFee)})</span>
                                 )}
                               </Label>
                               {isGift && (
@@ -1117,29 +906,34 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal ({itemCount} items)</span>
-                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping</span>
                     <span className="font-medium">
-                      {shipping === 0 ? <span className="text-green-600">Free</span> : `₹${shipping.toFixed(2)}`}
+                      {shipping === 0 ? <span className="text-green-600">Free</span> : formatPrice(shipping)}
                     </span>
                   </div>
                   {isGift && settings.giftEnabled && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Gift wrapping</span>
-                      <span className="font-medium">₹{giftFee.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(giftFee)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax ({Math.round((settings.taxRate || 0.18) * 100)}%)</span>
-                    <span className="font-medium">₹{tax.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span>₹{total.toFixed(2)}</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
+                    {currency !== 'INR' && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Payment processed in INR (₹{total.toFixed(2)}) via Razorpay
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1147,7 +941,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center space-x-2">
                     <Truck className="w-4 h-4 text-green-600" />
                     <span className="select-none">
-                      {shipping === 0 ? 'Free standard shipping' : `Shipping ₹${shipping.toFixed(2)}`}
+                      {shipping === 0 ? 'Free standard shipping' : `Shipping ${formatPrice(shipping)}`}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">

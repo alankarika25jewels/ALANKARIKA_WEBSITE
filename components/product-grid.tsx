@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { useProducts } from "@/hooks/useProducts"
 import { calculateDiscount } from "@/lib/price-utils"
+import PriceDisplay from "@/components/price-display"
 
 export default function ProductGrid() {
   const { addItem } = useCart()
@@ -110,9 +111,9 @@ export default function ProductGrid() {
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-[#C4A484]">₹{product.price}</span>
+                <span className="text-xl font-bold text-[#C4A484]"><PriceDisplay amount={product.price} /></span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+                  <span className="text-sm text-gray-500 line-through"><PriceDisplay amount={product.originalPrice} /></span>
                 )}
                 {product.isOnSale && product.offerPercentage && (
                   <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">

@@ -2,6 +2,7 @@
 
 import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
+import { useCurrency } from "@/contexts/currency-context"
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,7 @@ import { Trash2, Plus, Minus } from "lucide-react"
 
 export default function CartIcon() {
   const { state, removeItem, updateQuantity } = useCart()
+  const { formatPrice } = useCurrency()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -60,7 +62,7 @@ export default function CartIcon() {
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {item.name}
                         </p>
-                        <p className="text-sm text-gray-600">₹{item.price}</p>
+                        <p className="text-sm text-gray-600">{formatPrice(item.price)}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -92,7 +94,7 @@ export default function CartIcon() {
                 <div className="border-t border-gray-200 pt-4 mt-4">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-semibold text-gray-900">Total:</span>
-                    <span className="font-bold text-lg text-gray-900">₹{state.total.toFixed(2)}</span>
+                    <span className="font-bold text-lg text-gray-900">{formatPrice(state.total)}</span>
                   </div>
                   
                   <div className="flex space-x-3">

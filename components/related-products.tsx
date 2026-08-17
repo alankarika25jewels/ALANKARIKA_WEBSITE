@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useProducts } from "@/hooks/useProducts"
 import { useCart } from "@/contexts/cart-context"
 import { calculateDiscount } from "@/lib/price-utils"
+import PriceDisplay from "@/components/price-display"
 
 export default function RelatedProducts() {
   const { products } = useProducts()
@@ -108,9 +109,9 @@ export default function RelatedProducts() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-[#C4A484]">₹{product.price.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-[#C4A484]"><PriceDisplay amount={product.price} /></span>
                     {product.originalPrice && product.originalPrice > product.price && (
-                      <span className="text-sm text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
+                      <span className="text-sm text-gray-500 line-through"><PriceDisplay amount={product.originalPrice} /></span>
                     )}
                   </div>
                 </div>

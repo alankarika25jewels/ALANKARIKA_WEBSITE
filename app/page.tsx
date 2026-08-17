@@ -6,7 +6,7 @@ import Navbar from "@/components/navbar"
 import NecklaceSection from "@/components/necklace-section"
 import PendantSection from "@/components/pendant-section"
 import InstagramCarousel from "@/components/instagram-carousel"
-import JewelryLayout from "@/components/jewelry-layout"
+import HeroBannerSlider from "@/components/hero-banner-slider"
 
 import Image from "next/image"
 import Link from "next/link"
@@ -17,6 +17,7 @@ import { useCart } from "@/contexts/cart-context"
 import { useProducts } from "@/hooks/useProducts"
 import { calculateDiscount } from "@/lib/price-utils"
 import BuyNowButton from "@/components/buy-now-button"
+import PriceDisplay from "@/components/price-display"
 
 export default function Home() {
   const { addItem } = useCart()
@@ -144,23 +145,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden">
-        {/* Image Background */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/2.jpg"
-            alt="Alankarika Jewelry Collection"
-            fill
-            className="object-cover object-center"
-            priority
-          />
-        </div>
-
-        <div className="max-w-7xl px-4 lg:px-8 relative z-20 flex items-center justify-center min-h-screen">
-          {/* Hero content removed - only background image visible */}
-        </div>
-      </section>
+      {/* Hero Section — admin banners slider */}
+      <HeroBannerSlider />
 
       {/* About Section */}
       <section className="py-12 md:py-20 bg-white">
@@ -295,9 +281,9 @@ export default function Home() {
                         {product.name}
                       </h3>
                       <div className="mb-3 md:mb-4">
-                        <span className="text-lg md:text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
+                        <span className="text-lg md:text-2xl font-bold text-[#8B7355]"><PriceDisplay amount={product.price} /></span>
                         {product.originalPrice && product.originalPrice > product.price && (
-                          <span className="text-xs md:text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                          <span className="text-xs md:text-sm text-gray-500 line-through ml-2"><PriceDisplay amount={product.originalPrice} /></span>
                         )}
                       </div>
                       {/* Action Buttons - Horizontal Layout Below Price */}
@@ -451,9 +437,9 @@ export default function Home() {
                         {product.name}
                       </h3>
                       <div className="mb-4">
-                        <span className="text-2xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-[#8B7355]"><PriceDisplay amount={product.price} /></span>
                         {product.originalPrice && product.originalPrice > product.price && (
-                          <span className="text-sm text-gray-500 line-through ml-2">₹{product.originalPrice.toFixed(2)}</span>
+                          <span className="text-sm text-gray-500 line-through ml-2"><PriceDisplay amount={product.originalPrice} /></span>
                         )}
                       </div>
                       {/* Action Buttons - Horizontal Layout Below Price */}
@@ -652,9 +638,9 @@ export default function Home() {
 
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2">
-                            <span className="text-xl font-bold text-[#8B7355]">₹{product.price}</span>
+                            <span className="text-xl font-bold text-[#8B7355]"><PriceDisplay amount={product.price} /></span>
                             {product.originalPrice && product.originalPrice > product.price && (
-                              <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+                              <span className="text-sm text-gray-500 line-through"><PriceDisplay amount={product.originalPrice} /></span>
                             )}
                             {product.isOnSale && product.offerPercentage && (
                               <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">

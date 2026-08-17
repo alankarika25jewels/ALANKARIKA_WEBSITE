@@ -1,7 +1,6 @@
 "use client"
 
 import { useCart } from "@/contexts/cart-context"
-import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -10,17 +9,16 @@ import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, Gift, Star } from "lucide-
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { computeShippingFee } from "@/lib/buy-now"
 import type { StoreSettings } from "@/lib/store-settings"
 import { DEFAULT_SETTINGS } from "@/lib/store-settings"
+import { useCurrency } from "@/contexts/currency-context"
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()
-  const { requireAuth } = useAuth()
-  const router = useRouter()
+  const { formatPrice } = useCurrency()
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS)
   const [isGift, setIsGift] = useState(false)
@@ -66,10 +64,6 @@ export default function CartPage() {
     setIsUpdating(id)
     updateQuantity(id, newQuantity)
     setTimeout(() => setIsUpdating(null), 500)
-  }
-
-  const handleCheckout = () => {
-    requireAuth(() => router.push('/checkout'))
   }
 
   if (state.items.length === 0) {
@@ -180,7 +174,7 @@ export default function CartPage() {
 
                         <div className="text-right min-w-[6rem]">
                           <p className="text-xl font-bold text-[#8B7355]">
-                            ₹{(item.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.price * item.quantity)}
                           </p>
                         </div>
 
@@ -211,7 +205,7 @@ export default function CartPage() {
                         <Gift className="w-4 h-4 text-[#8B7355]" />
                         Send as Gift
                         {settings.giftFee > 0 && (
-                          <span className="text-sm font-normal text-gray-500">(+₹{settings.giftFee.toFixed(2)})</span>
+                          <span className="text-sm font-normal text-gray-500">(+{formatPrice(settings.giftFee)})</span>
                         )}
                       </Label>
                       {isGift && (
@@ -239,7 +233,7 @@ export default function CartPage() {
                 <div className="space-y-3 mb-6 text-sm">
                   <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
                     <span className="text-gray-600">Subtotal ({state.itemCount} items)</span>
-                    <span className="font-medium">₹{state.total.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(state.total)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
                     <span className="text-gray-600">Shipping</span>
@@ -247,35 +241,36 @@ export default function CartPage() {
                       {shipping === 0 ? (
                         <span className="text-green-700">Free</span>
                       ) : (
-                        `₹${shipping.toFixed(2)}`
+                        formatPrice(shipping)
                       )}
                     </span>
                   </div>
                   {isGift && settings.giftEnabled && (
                     <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
                       <span className="text-gray-600">Gift wrapping</span>
-                      <span className="font-medium">₹{giftFee.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(giftFee)}</span>
                     </div>
                   )}
                   <div className="flex justify-between py-2 border-b border-[#E8DFD0]">
                     <span className="text-gray-600">Tax ({Math.round((settings.taxRate || 0.18) * 100)}%)</span>
-                    <span className="font-medium">₹{tax.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
                   <div className="bg-[#F5EEDC] p-4 rounded-xl">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-[#8B7355]">₹{grandTotal.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-[#8B7355]">{formatPrice(grandTotal)}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <Button
-                    onClick={handleCheckout}
-                    className="w-full h-12 bg-[#8B7355] hover:bg-[#6F5B44] text-white text-base rounded-lg"
-                  >
-                    Proceed to Checkout
-                  </Button>
+                  <Link href="/checkout" className="w-full">
+                    <Button
+                      className="w-full h-12 bg-[#8B7355] hover:bg-[#6F5B44] text-white text-base rounded-lg"
+                    >
+                      Proceed to Checkout
+                    </Button>
+                  </Link>
                   <Link href="/products" className="w-full">
                     <Button
                       variant="outline"
@@ -288,7 +283,7 @@ export default function CartPage() {
 
                 {settings.freeShippingThreshold > 0 && shipping > 0 && (
                   <p className="mt-4 text-xs text-gray-500 text-center">
-                    Free shipping on orders ₹{settings.freeShippingThreshold.toFixed(0)}+
+                    Free shipping on orders {formatPrice(settings.freeShippingThreshold)}+
                   </p>
                 )}
               </div>

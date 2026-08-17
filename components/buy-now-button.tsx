@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/auth-context"
 import { saveBuyNowItem } from "@/lib/buy-now"
 import { useRouter } from "next/navigation"
 
@@ -31,7 +30,6 @@ export default function BuyNowButton({
   disabled?: boolean
   children?: React.ReactNode
 }) {
-  const { requireAuth } = useAuth()
   const router = useRouter()
   const outOfStock = disabled || product.isOutOfStock || (product.quantity !== undefined && product.quantity <= 0)
 
@@ -40,21 +38,19 @@ export default function BuyNowButton({
     e.stopPropagation()
     if (outOfStock) return
 
-    requireAuth(() => {
-      saveBuyNowItem({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image:
-          product.image ||
-          (product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"),
-        category: product.category,
-        brand: product.brand || "",
-        quantity,
-      })
-      router.push("/checkout?mode=buynow")
+    saveBuyNowItem({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image:
+        product.image ||
+        (product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg"),
+      category: product.category,
+      brand: product.brand || "",
+      quantity,
     })
+    router.push("/checkout?mode=buynow")
   }
 
   return (

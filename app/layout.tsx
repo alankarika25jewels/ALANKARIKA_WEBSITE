@@ -6,6 +6,7 @@ import { Allura } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/contexts/cart-context'
 import { AuthProvider } from '@/contexts/auth-context'
+import { CurrencyProvider } from '@/contexts/currency-context'
 import { Toaster } from '@/components/ui/toaster'
 
 const allura = Allura({
@@ -51,10 +52,12 @@ html {
           strategy="afterInteractive"
         />
         <AuthProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
+          <CurrencyProvider>
+            <CartProvider>
+              {children}
+              <Toaster />
+            </CartProvider>
+          </CurrencyProvider>
         </AuthProvider>
       </body>
     </html>

@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/contexts/auth-context'
 
 export interface CartItem {
   id: string
@@ -100,7 +99,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   state: CartState
-  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }, options?: { skipAuth?: boolean }) => void
+  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
@@ -123,7 +122,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     itemCount: 0
   })
   const { toast } = useToast()
-  const { requireAuth } = useAuth()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -153,15 +151,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
   }
 
-  const addItem = (
-    item: Omit<CartItem, 'quantity'> & { quantity?: number },
-    options?: { skipAuth?: boolean }
-  ) => {
-    if (options?.skipAuth) {
-      performAdd(item)
-      return
-    }
-    requireAuth(() => performAdd(item))
+  const addItem = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    performAdd(item)
   }
 
   const removeItem = (id: string) => {

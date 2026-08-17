@@ -5,11 +5,11 @@ import { useState, useEffect } from "react"
 import { Heart, ShoppingCart, Star, Plus, Minus, Share2, Truck, RotateCcw, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
-import { useAuth } from "@/contexts/auth-context"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { calculateDiscount } from "@/lib/price-utils"
 import { saveBuyNowItem } from "@/lib/buy-now"
+import PriceDisplay from "@/components/price-display"
 
 interface Product {
   _id: string
@@ -33,7 +33,6 @@ interface Product {
 
 export default function ProductDetail({ productId: propProductId }: { productId?: string }) {
   const { addItem } = useCart()
-  const { requireAuth } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [selectedImage, setSelectedImage] = useState(0)
@@ -148,19 +147,17 @@ export default function ProductDetail({ productId: propProductId }: { productId?
 
   const handleBuyNow = () => {
     if (product.isOutOfStock || product.quantity <= 0) return
-    requireAuth(() => {
-      saveBuyNowItem({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
-        category: product.category,
-        brand: "",
-        quantity,
-      })
-      router.push('/checkout?mode=buynow')
+    saveBuyNowItem({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images && product.images.length > 0 ? product.images[0].url : "/placeholder.svg",
+      category: product.category,
+      brand: "",
+      quantity,
     })
+    router.push('/checkout?mode=buynow')
   }
 
   return (
@@ -224,9 +221,9 @@ export default function ProductDetail({ productId: propProductId }: { productId?
               </div>
 
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-[#8B7355]">₹{product.price.toFixed(2)}</span>
+                <span className="text-3xl font-bold text-[#8B7355]"><PriceDisplay amount={product.price} /></span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-xl text-gray-500 line-through">₹{product.originalPrice.toFixed(2)}</span>
+                  <span className="text-xl text-gray-500 line-through"><PriceDisplay amount={product.originalPrice} /></span>
                 )}
                 {product.isOnSale && product.originalPrice && (
                   <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
