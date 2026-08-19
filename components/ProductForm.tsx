@@ -43,6 +43,8 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
   const [existingVideos, setExistingVideos] = useState(product?.videos || [])
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
   const [videosToDelete, setVideosToDelete] = useState<string[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([])
 
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -67,7 +69,19 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
       setImagesToDelete([])
       setVideosToDelete([])
     }
-  }, [isOpen, mode, product?._id, product])
+  }, [isOpen, mode, product?._id])
+
+  useEffect(() => {
+    const urls = images.map((file) => URL.createObjectURL(file))
+    setImagePreviews(urls)
+    return () => urls.forEach((url) => URL.revokeObjectURL(url))
+  }, [images])
+
+  useEffect(() => {
+    const urls = videos.map((file) => URL.createObjectURL(file))
+    setVideoPreviews(urls)
+    return () => urls.forEach((url) => URL.revokeObjectURL(url))
+  }, [videos])
 
   const selectedCategory = dynamicCategories.find(c => c.name === formData.category)
   const subCategories = selectedCategory?.subCategories || []
@@ -98,11 +112,27 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
   }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setImages(prev => [...prev, ...Array.from(event.target.files || [])])
+    const files = Array.from(event.target.files || []).filter((file) => file.type.startsWith('image/'))
+    if (files.length) {
+      setImages((prev) => [...prev, ...files])
+    }
+    event.target.value = ''
   }
 
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setVideos(prev => [...prev, ...Array.from(event.target.files || [])])
+    const files = Array.from(event.target.files || []).filter((file) => file.type.startsWith('video/'))
+    if (files.length) {
+      setVideos((prev) => [...prev, ...files])
+    }
+    event.target.value = ''
+  }
+
+  const removeNewImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const removeNewVideo = (index: number) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index))
   }
 
   const removeExistingImage = (publicId: string) => {
@@ -354,42 +384,74 @@ export default function ProductForm({ isOpen, onClose, onSubmit, product, mode }
           {/* Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
-            {existingImages.length > 0 && (
-              <div className="grid grid-cols-4 gap-3 mb-3">
+            {(existingImages.length > 0 || images.length > 0) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                 {existingImages.map((image, index) => (
-                  <div key={image.publicId || index} className="relative group">
-                    <img src={image.url} alt="" className="w-full h-24 object-cover rounded-lg" />
+                  <div key={image.publicId || `existing-img-${index}`} className="relative group">
+                    <img src={image.url} alt="" className="w-full h-24 object-cover rounded-lg border" />
                     <button type="button" onClick={() => removeExistingImage(image.publicId)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100">
                       <X className="w-3 h-3" />
                     </button>
+                    <p className="text-[11px] text-gray-500 mt-1 truncate">Saved image</p>
+                  </div>
+                ))}
+                {images.map((file, index) => (
+                  <div key={`${file.name}-${file.size}-${index}`} className="relative group">
+                    <img
+                      src={imagePreviews[index]}
+                      alt={file.name}
+                      className="w-full h-24 object-cover rounded-lg border border-[#8B7355]"
+                    />
+                    <button type="button" onClick={() => removeNewImage(index)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
+                      <X className="w-3 h-3" />
+                    </button>
+                    <p className="text-[11px] text-gray-700 mt-1 truncate" title={file.name}>{file.name}</p>
                   </div>
                 ))}
               </div>
             )}
             <input ref={imageInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
             <button type="button" onClick={() => imageInputRef.current?.click()} className="border-2 border-dashed rounded-lg p-4 w-full flex flex-col items-center text-gray-600 hover:border-[#8B7355]">
-              <Upload className="w-6 h-6 mb-1" /> Add images
+              <Upload className="w-6 h-6 mb-1" />
+              Add images
+              {images.length > 0 && (
+                <span className="text-xs text-[#8B7355] mt-1">{images.length} new image{images.length === 1 ? '' : 's'} selected</span>
+              )}
             </button>
           </div>
 
           {/* Videos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Product Videos</label>
-            {existingVideos.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 mb-3">
+            {(existingVideos.length > 0 || videos.length > 0) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 {existingVideos.map((video, index) => (
-                  <div key={video.publicId || index} className="relative">
+                  <div key={video.publicId || `existing-vid-${index}`} className="relative">
                     <video src={video.url} className="w-full h-24 object-cover rounded-lg" controls />
                     <button type="button" onClick={() => removeExistingVideo(video.publicId)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
                       <X className="w-3 h-3" />
                     </button>
+                    <p className="text-[11px] text-gray-500 mt-1 truncate">Saved video</p>
+                  </div>
+                ))}
+                {videos.map((file, index) => (
+                  <div key={`${file.name}-${file.size}-${index}`} className="relative">
+                    <video src={videoPreviews[index]} className="w-full h-24 object-cover rounded-lg border border-[#8B7355]" controls />
+                    <button type="button" onClick={() => removeNewVideo(index)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
+                      <X className="w-3 h-3" />
+                    </button>
+                    <p className="text-[11px] text-gray-700 mt-1 truncate" title={file.name}>{file.name}</p>
                   </div>
                 ))}
               </div>
             )}
             <input ref={videoInputRef} type="file" multiple accept="video/*" onChange={handleVideoUpload} className="hidden" />
-            <button type="button" onClick={() => videoInputRef.current?.click()} className="border-2 border-dashed rounded-lg p-4 w-full flex flex-col items-center text-gray-600">
-              <Video className="w-6 h-6 mb-1" /> Add videos
+            <button type="button" onClick={() => videoInputRef.current?.click()} className="border-2 border-dashed rounded-lg p-4 w-full flex flex-col items-center text-gray-600 hover:border-[#8B7355]">
+              <Video className="w-6 h-6 mb-1" />
+              Add videos
+              {videos.length > 0 && (
+                <span className="text-xs text-[#8B7355] mt-1">{videos.length} new video{videos.length === 1 ? '' : 's'} selected</span>
+              )}
             </button>
           </div>
 
